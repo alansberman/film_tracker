@@ -1,0 +1,68 @@
+{% include 'films/main.html' %}
+<div class="container-fluid">
+  {% if not films %}
+  <div class="row">
+    <div class="col"></div>
+    <div class="col">
+      <h2>Search Film</h2>
+    </div>
+    <div class="col"></div>
+  </div>
+  <div class="row">
+    <div class="col"></div>
+    <div class="col">
+      <form method="POST">
+        {% csrf_token %} {{ form }}
+        <button type="submit" class="btn btn-info">Search</button>
+      </form>
+    </div>
+    <div class="col"></div>
+  </div>
+  {% endif %} {% if films %}
+  <div class="row">
+    <div class="col"></div>
+    <div class="col">
+      <h2>Search Results for "{{ query }}":</h2>
+    </div>
+    <div class="col"></div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <table class="table table-striped">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">Title</th>
+            <th scope="col">Genres</th>
+            <th scope="col">Average Score</th>
+            <th scope="col">Release Date</th>
+            <th scope="col">Watched Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in films %}
+          <tr>
+            <td>{{ row.title }}</td>
+            <td>{{ row.genres }}</td>
+            <td>{{ row.vote_average }}</td>
+            <td>{{ row.release_date }}</td>
+            <td style="display: inline-block">
+              <form class="form-inline" method="GET" action="/{{ row.id }}/add">
+                <button
+                  type="submit"
+                  class="btn btn-success"
+                  method="GET"
+                  action="/{{ row.id }}/add"
+                >
+                  Add
+                </button>
+              </form>
+              <!-- <button type="button" class="btn btn-info">Wishlist</button> -->
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+</div>

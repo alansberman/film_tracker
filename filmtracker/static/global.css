@@ -1,0 +1,39 @@
+* {
+  font-family: "Roboto", sans-serif;
+}
+
+.btn-success {
+  background-color: #3eaf7c;
+}
+.th {
+  color: #3eaf7c;
+}
+
+body {
+  background-color: #eeeeee;
+}
+
+table {
+  margin: 20px 20px;
+}
+
+.navbar-custom {
+  background-color: #093145;
+}
+
+.body-card {
+  margin: 13px 13px;
+  width: 100%;
+}
+
+#text {
+  padding: 10px;
+}
+
+.btn-custom {
+  background-color: #b22222;
+  color: white;
+}
+/* .container-fluid {
+  background-color: #fffafa;
+} */

@@ -1,0 +1,147 @@
+{% include 'films/main.html' %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col"></div>
+    <div class="col text-center">
+      <br />
+      <h2>{{ film.title }}</h2>
+      <br />
+    </div>
+    <div class="col"></div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <div class="card text-center">
+        <div class="card-header">Genre(s)</div>
+        <div class="card-body">
+          <h5 class="card-title">{{ film.genres }}</h5>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card text-center">
+        <div class="card-header">Directed by</div>
+        <div class="card-body">
+          {% for director in credits.director %}
+          <h5 class="card-title">{{ director.name }}</h5>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card text-center">
+        <div class="card-header">Release Date</div>
+        <div class="card-body">
+          <h5 class="card-title">{{ film.release_date }}</h5>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="card body-card">
+      <div id="text">
+        <h5>Overview</h5>
+        <p>{{ film.overview }}</p>
+        <hr />
+        <button
+          class="btn btn-primary"
+          type="button"
+          data-toggle="collapse"
+          data-target="#similar"
+          aria-expanded="false"
+          aria-controls="collapseExample"
+        >
+          Similar Films
+        </button>
+        <button
+          class="btn btn-primary"
+          type="button"
+          data-toggle="collapse"
+          data-target="#recommendations"
+          aria-expanded="false"
+          aria-controls="collapseExample"
+        >
+          Recommendations
+        </button>
+        <div class="collapse" id="similar">
+          <br />
+          <div class="card card-body">
+            <div>
+              {% for item in film.similar %}
+              <a href="/{{item.id }}/view">{{ item.title }}</a> | {% endfor %}
+            </div>
+          </div>
+        </div>
+        <div class="collapse" id="recommendations">
+          <br />
+          <div class="card card-body">
+            <div>
+              {% for item in film.recommendations %}
+              <a href="/{{item.id }}/view">{{ item.title }}</a> | {% endfor %}
+            </div>
+          </div>
+        </div>
+        <hr />
+        {% load humanize %}
+        <h5>Budget</h5>
+        ${{ film.budget|intcomma }}
+        <hr />
+        <h5>Box Office</h5>
+        ${{ film.revenue|intcomma }}
+        <hr />
+        <h5>Runtime: {{film.runtime}}min</h5>
+        <hr />
+        <h5>Producers</h5>
+        {% for producer in credits.producers %} {{ producer.name }} {% endfor %}
+        <hr />
+        <h5>Screenplay by</h5>
+        <div>
+          {% for writer in credits.screenplay %} {{ writer.name }} {% endfor %}
+        </div>
+        <br />
+        <h5>Story by</h5>
+        {% for writer in credits.story %} {{ writer.name }} {% endfor %}
+        <hr />
+        <h5>Director of Photography</h5>
+        <div>
+          {% for person in credits.director_of_photography %} {{ person.name }}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- <table class="table table-striped">
+    <thead class="thead-dark"></thead>
+    <tbody>
+      <tr>
+        <td>Overview</td>
+        <td>{{ film.overview }}</td>
+      </tr>
+      <tr>
+        <td>Release Date</td>
+        <td>{{ film.release_date }}</td>
+      </tr>
+      <tr>
+        <td>Genre(s)</td>
+        <td>{{ film.genres }}</td>
+      </tr>
+      <tr>
+        <td>Average User Score</td>
+        <td>{{ film.vote_average }}</td>
+      </tr>
+      <tr>
+        <td>My Score</td>
+        <td>{{ film.score }}</td>
+      </tr>
+      <td>My Comments</td>
+      <td>{{ film.comments }}</td>
+
+      <tr>
+        <td>Date Watched</td>
+        <td>{{ film.date_watched|date:"SHORT_DATE_FORMAT" }}</td>
+      </tr>
+    </tbody>
+  </table> -->
