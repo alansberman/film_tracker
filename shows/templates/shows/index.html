@@ -1,0 +1,39 @@
+{% include 'shows/main.html' %}
+<div class="container-fluid">
+    <div class="row">
+      <div class="col"></div>
+      <div class="col text-center">
+        <br>
+        <h2>My Shows</h2>
+        <br>
+      </div>
+      <div class="col"></div>
+    </div>
+  
+    <div class="row">
+      <table class="table table-striped" style="margin: 50px 50px">
+        <thead class="thead-info">
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Genres</th>
+            <th scope="col">Average Score</th>
+            <th scope="col">My Score</th>
+            <th scope="col">Date Watched</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in shows %}
+          <tr>
+            <td><a href={{ row.movie_db_id }}/view }}>{{ row.name }}</a></td>
+            <td>{{ row.genres }}</td>
+            <td>{{ row.vote_average }}</td>
+            <td>{{ row.score }}</td>
+            <td>{{ row.date_watched|date:"SHORT_DATE_FORMAT" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="row"></div>
+  </div>
+  

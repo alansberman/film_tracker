@@ -1,0 +1,97 @@
+{% include 'shows/main.html' %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col"></div>
+    <div class="col text-center">
+      <br />
+      <h2>{{ episode.name }} - {{show.name}} {{season.name}}</h2>
+      {% if not watched and not wishlisted %}
+      <button
+        type="button"
+        class="btn btn-info"
+        style="margin-bottom: 10px; margin-top: 10px"
+      >
+        <a href="{% url 'wishlist-movie' show.id %}" style="color: white"
+          >Wishlist</a
+        >
+      </button>
+      {% endif %}
+    </div>
+    <div class="col"></div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <div class="card text-center">
+        <div class="card-header">Air Date</div>
+        <div class="card-body">
+          <h5 class="card-title">{{ episode.air_date }}</h5>
+        </div>
+      </div>
+    </div>
+    {% for member in episode.crew %}
+    <div class="col">
+      <div class="card text-center">
+        <div class="card-header">{{member.job}}</div>
+        <div class="card-body">
+          <h5 class="card-title">
+            <a href="/people/{{member.id }}/view">{{ member.name }}</a>
+          </h5>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="row">
+    <div class="card body-card shadow">
+      <div id="text">
+        <div class="row">
+          <div class="col">
+            <h5>Overview</h5>
+            <p>{{ episode.overview }}</p>
+            <hr />
+            {% if episode.guest_stars %}
+            <h5>Guest Stars</h5>
+            <table class="table table-striped" style="width: 100%">
+              <thead class="thead-dark">
+                <tr>
+                  <th scope="col">Actor</th>
+                  <th scope="col">Role</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for star in episode.guest_stars %}
+                <tr>
+                  <td>
+                    <a href="/people/{{star.id}}/view">{{ star.name }}</a>
+                  </td>
+                  {% if star.character %}
+                  <td>{{star.character}}</td>
+                  {% else %}
+                  <td>N/A</td>
+                  {% endif %}
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            <!---->
+            {% endif %}
+          </div>
+          {% if episode.still_path %}
+          <div class="col">
+            <div class="col text-center">
+              <br />
+              <img
+                src="https://image.tmdb.org/t/p/original{{episode.still_path}}"
+                style="width: 500px; height: 550px"
+                alt="poster"
+              />
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

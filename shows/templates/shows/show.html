@@ -1,0 +1,101 @@
+{% include 'shows/main.html' %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col"></div>
+    <div class="col text-center">
+      <br />
+      <h2>{{ show.name }}</h2>
+      {% if not watched and not wishlisted %}
+      <button
+        type="button"
+        class="btn btn-info"
+        style="margin-bottom: 10px; margin-top: 10px"
+      >
+        <a href="{% url 'wishlist-movie' show.id %}" style="color: white"
+          >Wishlist</a
+        >
+      </button>
+      {% endif %}
+    </div>
+    <div class="col"></div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <div class="card text-center">
+        <div class="card-header">Genre(s)</div>
+        <div class="card-body">
+          <h5 class="card-title">{{ show.genres }}</h5>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card text-center">
+        <div class="card-header">Number of Seasons</div>
+        <div class="card-body">
+          <h5 class="card-title">{{ show.number_of_seasons }}</h5>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card text-center">
+        <div class="card-header">First Aired</div>
+        <div class="card-body">
+          <h5 class="card-title">{{ show.first_air_date }}</h5>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="card body-card shadow">
+      <div id="text">
+        <div class="row">
+          <div class="col">
+            <h5>Overview</h5>
+            <p>{{ show.overview }}</p>
+            <hr />
+
+            <h5>Recommendations</h5>
+            {% for item in show.recommendations %}
+            <a href="{% url 'view' item.id %}">{{ item.name }}</a> |
+            <!---->
+            {% endfor %}
+            <hr />
+
+            <h5>Cast</h5>
+            <div>
+              {% for person in cast %}
+              <a href="/people/{{person.id}}/view">{{ person.name }}</a> |
+              <!---->
+              {% endfor %}
+              <!---->
+            </div>
+            <hr />
+            <h5>Seasons</h5>
+            <div>
+              {% for season in show.seasons %}
+              <a href="{% url 'season' show.id season.season_number %}"
+                >{{ season.name }}</a
+              >
+              |
+              <!---->
+              {% endfor %}
+              <!---->
+            </div>
+            <hr />
+          </div>
+          {% if poster %}
+          <div class="col text-center">
+            <br />
+            <img
+              src="{{poster}}"
+              style="width: 500px; height: 550px"
+              alt="poster"
+            />
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

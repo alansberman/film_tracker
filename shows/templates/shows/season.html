@@ -1,0 +1,83 @@
+{% include 'shows/main.html' %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col"></div>
+    <div class="col text-center">
+      <br />
+      <h2>{{ show.name }} - {{ season.name}}</h2>
+      {% if not watched and not wishlisted %}
+      <button
+        type="button"
+        class="btn btn-info"
+        style="margin-bottom: 10px; margin-top: 10px"
+      >
+        <a href="{% url 'wishlist-movie' show.id %}" style="color: white"
+          >Wishlist</a
+        >
+      </button>
+      {% endif %}
+      <!--  -->
+      {% if not watched %}
+      <button
+        type="button"
+        class="btn btn-success"
+        style="margin-bottom: 10px; margin-top: 10px"
+      >
+        <a href="{% url 'wishlist-movie' show.id %}" style="color: white"
+          >Already Watched</a
+        >
+      </button>
+      {% endif %}
+    </div>
+    <div class="col"></div>
+  </div>
+
+  <div class="card body-card shadow">
+    <div id="text">
+      <div class="row">
+        <div class="col">
+          <h5>Overview</h5>
+          <p>{{ season.overview }}</p>
+          <hr />
+          <h5>Episodes</h5>
+          <table class="table table-striped" style="width: 100%">
+            <thead class="thead-dark">
+              <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Overview</th>
+                <th scope="col">Air Date</th>
+                <th scope="col">Average Score</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in season.episodes %}
+              <tr>
+                <td>
+                  <a
+                    href="{% url 'episode' show.id season.season_number row.episode_number %}"
+                    >{{ row.name }}</a
+                  >
+                </td>
+                <td>{{ row.overview }}</td>
+                <td>{{ row.air_date }}</td>
+                <td>{{ row.vote_average }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          <!-- {% if poster %}
+        <div class="col text-center">
+          <br />
+          <img
+            src="{{poster}}"
+            style="width: 500px; height: 550px"
+            alt="poster"
+          />
+        </div>
+        {% endif %} -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

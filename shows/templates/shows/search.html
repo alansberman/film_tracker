@@ -1,0 +1,119 @@
+{% include 'shows/main.html' %}
+<div class="container-fluid">
+  {% if not shows %}
+  <div class="row">
+    <div class="col"></div>
+    <div class="col">
+      <h2>Search Show</h2>
+    </div>
+    <div class="col"></div>
+  </div>
+  <div class="row">
+    <div class="col"></div>
+    <div class="col">
+      <form method="POST">
+        {% csrf_token %} {{ form }}
+        <button type="submit" class="btn btn-info">Search</button>
+      </form>
+    </div>
+    <div class="col"></div>
+  </div>
+  {% endif %} {% if shows %}
+  <div class="row">
+    <div class="col"></div>
+    <div class="col">
+      <h2>Search Results for "{{ query }}":</h2>
+    </div>
+    <div class="col"></div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <table class="table table-striped">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Genres</th>
+            <th scope="col">Average Score</th>
+            <th scope="col">Release Date</th>
+            <th scope="col">Watched Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in shows %}
+          <!---->
+
+          {% if row %}
+          <tr>
+            <td>
+              <a href="{% url 'view' row.id %}">{{ row.name }}</a>
+            </td>
+            <td>{{ row.genres }}</td>
+            <td>{{ row.vote_average }}</td>
+            <td>{{ row.release_date }}</td>
+            <td style="display: inline-block">
+              <form
+                class="form-inline"
+                method="GET"
+                style="float: left; padding-right: 5px"
+                action="{% url 'add' row.id %}"
+              >
+                <button
+                  type="submit"
+                  class="btn btn-success"
+                  method="GET"
+                  action="{% url 'add' row.id %}"
+                >
+                  Add
+                </button>
+              </form>
+
+              <button type="button" class="btn btn-info">
+                <a href="{% url 'wishlist-movie' row.id %}" style="color: white"
+                  >Wishlist</a
+                >
+              </button>
+            </td>
+          </tr>
+          {% endif %}
+          <!---->
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <table class="table table-striped">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Popularity</th>
+            <th scope="col">Known For</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in people %}
+          <!---->
+
+          {% if row %}
+          <tr>
+            <td>
+              <a href="/people/{{row.id}}/view">{{ row.name }}</a>
+            </td>
+            <td>{{ row.popularity }}</td>
+            <td>
+              <a href="{% url 'view' row.known_for.id %}"
+                >{{ row.known_for.title }}</a
+              >
+            </td>
+          </tr>
+          {% endif %}
+          <!---->
+
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+</div>

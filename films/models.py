@@ -9,7 +9,7 @@ class Film(models.Model):
     overview = models.TextField(null=True)
     movie_db_id = models.IntegerField(null=True)
     release_date = models.CharField(max_length=200)
-    comments = models.CharField(max_length=200)
+    comments = models.CharField(max_length=200, null=True)
     popularity = models.TextField(null=True)
     genres = models.CharField(max_length=200, null=True)
     runtime = models.IntegerField(null=True)
@@ -18,7 +18,7 @@ class Film(models.Model):
     vote_average = models.FloatField(null=True)
     added = models.BooleanField(null=True)
     wishlisted = models.BooleanField(null=True)
-    score = models.FloatField()
+    score = models.FloatField(null=True)
     date_watched = models.DateTimeField('Date Added', null=True)
 
     def __str__(self):

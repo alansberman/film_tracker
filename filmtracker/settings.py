@@ -32,7 +32,10 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'django.contrib.humanize',
+    'homepage.apps.HomepageConfig',
     'films.apps.FilmsConfig',
+    'people.apps.PeopleConfig',
+    'shows.apps.ShowConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

@@ -6,7 +6,13 @@
     <div class="col text-center">
       <br />
       <h2>{{ film.title }}</h2>
-      <br />
+      {% if not watched and not wishlisted %}
+      <button type="button" class="btn btn-info" style="margin-bottom: 10px; margin-top: 10px;">
+        <a href="{% url 'wishlist-movie' film.id %}" style="color: white"
+          >Wishlist</a
+        >
+      </button>
+      {% endif %}
     </div>
     <div class="col"></div>
   </div>
@@ -24,7 +30,9 @@
         <div class="card-header">Directed by</div>
         <div class="card-body">
           {% for director in credits.director %}
-          <h5 class="card-title">{{ director.name }}</h5>
+          <h5 class="card-title">
+            <a href="/people/{{director.id }}/view">{{ director.name }}</a>
+          </h5>
           {% endfor %}
         </div>
       </div>
@@ -38,77 +46,114 @@
       </div>
     </div>
   </div>
-  <div class="row">
-    <div class="card body-card">
-      <div id="text">
-        <h5>Overview</h5>
-        <p>{{ film.overview }}</p>
-        <hr />
-        <button
-          class="btn btn-primary"
-          type="button"
-          data-toggle="collapse"
-          data-target="#similar"
-          aria-expanded="false"
-          aria-controls="collapseExample"
-        >
-          Similar Films
-        </button>
-        <button
-          class="btn btn-primary"
-          type="button"
-          data-toggle="collapse"
-          data-target="#recommendations"
-          aria-expanded="false"
-          aria-controls="collapseExample"
-        >
-          Recommendations
-        </button>
-        <div class="collapse" id="similar">
-          <br />
-          <div class="card card-body">
-            <div>
-              {% for item in film.similar %}
-              <a href="/{{item.id }}/view">{{ item.title }}</a> | {% endfor %}
+
+
+  <div class="card body-card shadow">
+    <div id="text">
+      <div class="row">
+        <div class="col">
+          <h5>Overview</h5>
+          <p>{{ film.overview }}</p>
+          <hr />
+          {% if review %}
+          <h5><a href="{{review.link.url}}">New York Times Review</a>
+            {% if review.critics_pick == 1 %}
+            <small><b>Critic's Pick</b></small>
+            {% endif %}
+          </h5>
+          <p>"{{ review.summary_short}}" <span> - {{review.byline}}</span></p>
+          <hr>
+          {% endif %}
+     
+          <button
+            class="btn btn-primary"
+            type="button"
+            data-toggle="collapse"
+            data-target="#similar"
+            aria-expanded="false"
+            aria-controls="collapseExample"
+          >
+            Similar Films
+          </button>
+          <button
+            class="btn btn-primary"
+            type="button"
+            data-toggle="collapse"
+            data-target="#recommendations"
+            aria-expanded="false"
+            aria-controls="collapseExample"
+          >
+            Recommendations
+          </button>
+          <div class="collapse" id="similar">
+            <br />
+            <div class="card card-body">
+              <div>
+                {% for item in film.similar %}
+                <a href="{% url 'view' item.id %}"">{{ item.title }}</a> | {% endfor %}
+              </div>
             </div>
           </div>
-        </div>
-        <div class="collapse" id="recommendations">
-          <br />
-          <div class="card card-body">
-            <div>
-              {% for item in film.recommendations %}
-              <a href="/{{item.id }}/view">{{ item.title }}</a> | {% endfor %}
+          <div class="collapse" id="recommendations">
+            <br />
+            <div class="card card-body">
+              <div>
+                {% for item in film.recommendations %}
+                <a href="{% url 'view' item.id %}">{{ item.title }}</a> |
+                <!---->
+                {% endfor %}
+                <!---->
+              </div>
             </div>
           </div>
-        </div>
-        <hr />
-        {% load humanize %}
-        <h5>Budget</h5>
-        ${{ film.budget|intcomma }}
-        <hr />
-        <h5>Box Office</h5>
-        ${{ film.revenue|intcomma }}
-        <hr />
-        <h5>Runtime: {{film.runtime}}min</h5>
-        <hr />
-        <h5>Producers</h5>
-        {% for producer in credits.producers %} {{ producer.name }} {% endfor %}
-        <hr />
-        <h5>Screenplay by</h5>
-        <div>
-          {% for writer in credits.screenplay %} {{ writer.name }} {% endfor %}
-        </div>
-        <br />
-        <h5>Story by</h5>
-        {% for writer in credits.story %} {{ writer.name }} {% endfor %}
-        <hr />
-        <h5>Director of Photography</h5>
-        <div>
-          {% for person in credits.director_of_photography %} {{ person.name }}
+          <hr />
+          {% load humanize %}
+          {% if film.budget > 0 %}
+          <h5>Budget</h5>
+          ${{ film.budget|intcomma }}
+          <hr />
+          {% endif %}
+          {% if film.revenue > 0 %}
+          <h5>Box Office</h5>
+          ${{ film.revenue|intcomma }}
+          <hr />
+          {% endif %}
+          <h5>Runtime: {{film.runtime}}min</h5>
+          <hr />
+          <h5>Producers</h5>
+          {% for producer in credits.producers %}
+          <a href="/people/{{producer.id }}/view">{{ producer.name }}</a>
           {% endfor %}
+          <hr />
+          <h5>Screenplay by</h5>
+          <div>
+            {% for writer in credits.screenplay %}
+            <a href="/people/{{writer.id }}/view">{{ writer.name }}</a>
+            {% endfor %}
+          </div>
+          <hr />
+          {% if credits.story %}
+          <h5>Story by</h5>
+          {% for writer in credits.story %}
+          <a href="/people/{{writer.id }}/view">{{ writer.name }}</a>
+          {% endfor %}
+          <hr />
+          {% endif %}
+          <h5>Director of Photography</h5>
+          <div>
+            {% for person in credits.director_of_photography %}
+            <a href="/people/{{person.id }}/view">{{ person.name }}</a>
+            {% endfor %}
+          </div>
+
+      
         </div>
-      </div>
+        {% if poster %}
+        <div class="col text-center">
+          <br>
+          <img src="{{poster}}" style="width: 500px; height: 550px;" alt="poster" >
+        </div>
+        {% endif %}
     </div>
   </div>
 </div>

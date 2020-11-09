@@ -2,6 +2,8 @@ from django.shortcuts import render
 import requests
 from . import film_helper
 import json
+from datetime import date
+
 # Create your views here.
 from django.http import HttpResponse, HttpResponseRedirect
 from imdb import IMDb
@@ -14,7 +16,8 @@ from .forms import FilmSearchForm, FilmForm
 
 
 def index(request):
-    context = {'films': Film.objects.all()}
+    # pylint: disable=no-member
+    context = {'films': Film.objects.filter(added=True)}
     return render(request, 'films/index.html', context)
 
 
@@ -24,18 +27,16 @@ def get_film(request, id):
     similar = film_helper.get_similar_films(id)
     film['similar'] = similar
     recommendations = film_helper.get_recommendations(id)
+    # pylint: disable=no-member
+    wishlisted = Film.objects.filter(
+        wishlisted=True, movie_db_id=film['id']).exists()
+    watched = Film.objects.filter(
+        added=True, movie_db_id=film['id']).exists()
     film['recommendations'] = recommendations
-    return render(request, f'films/film.html', {'film': film, 'credits': nb_credits})
-
-
-def get_person(request, id):
-    nb_credits = film_helper.get_nb_credits(id)
-    film = film_helper.get_film_details(id)
-    similar = film_helper.get_similar_films(id)
-    film['similar'] = similar
-    recommendations = film_helper.get_recommendations(id)
-    film['recommendations'] = recommendations
-    return render(request, f'films/film.html', {'film': film, 'credits': nb_credits})
+    year = film['release_date'].split("-")[0]
+    review = film_helper.get_review(film['title'], year)
+    poster = film_helper.get_poster(id)
+    return render(request, f'films/film.html', {'film': film, 'credits': nb_credits, 'wishlisted': wishlisted, 'watched': watched, 'review': review, 'poster': poster})
 
 
 def search_results(request):
@@ -74,7 +75,7 @@ def add_movie(request, movie_id):
                               movie_db_id=film['movie_db_id']
                               )
             added_film.save()
-            return HttpResponseRedirect('/')
+            return HttpResponseRedirect('/films')
 
     # if a GET (or any other method) we'll create a blank form
     else:
@@ -83,8 +84,35 @@ def add_movie(request, movie_id):
     return render(request, 'films/add.html', {'form': form, 'id': movie_id})
 
 
-def search(request):
+def wishlist_movie(request, movie_id):
+    film = film_helper.get_film_for_create(movie_id)
 
+    wishlisted_film = Film(title=film['title'],
+                           original_language=film['original_language'],
+                           overview=film['overview'],
+                           popularity=film['popularity'],
+                           genres=film['genres'],
+                           runtime=film['runtime'],
+                           budget=film['budget'],
+                           revenue=film['revenue'],
+                           vote_average=film['vote_average'],
+                           wishlisted=True,
+                           date_watched=date.today(),
+                           added=False,
+                           release_date=film['release_date'],
+                           movie_db_id=film['movie_db_id']
+                           )
+    wishlisted_film.save()
+    return HttpResponseRedirect('/films/wishlist')
+
+
+def wishlist(request):
+    # pylint: disable=no-member
+    context = {'films': Film.objects.filter(wishlisted=True)}
+    return render(request, 'films/wishlist_index.html', context)
+
+
+def search(request):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
@@ -98,9 +126,10 @@ def search(request):
             payload = {
                 'api_key': 'e6b24f5371e6fd462a8a26499fd466b2', 'query': query}
             response = requests.get(
-                'https://api.themoviedb.org/3/search/movie', params=payload)
-            films = film_helper.parse_film_search(response.json())
-            context = {'films': films, 'query': payload['query']}
+                'https://api.themoviedb.org/3/search/multi', params=payload)
+            films, people = film_helper.parse_search(response.json(), query)
+            context = {'films': films,
+                       'query': payload['query'], 'people': people}
             return render(request, 'films/search.html', context)
 
     # if a GET (or any other method) we'll create a blank form
@@ -109,29 +138,12 @@ def search(request):
         payload = {
             'api_key': 'e6b24f5371e6fd462a8a26499fd466b2', 'query': query}
         response = requests.get(
-            'https://api.themoviedb.org/3/search/movie', params=payload)
-        films = film_helper.parse_film_search(response.json())
-        context = {'films': films, 'query': payload['query']}
+            'https://api.themoviedb.org/3/search/multi', params=payload)
+        films, people = film_helper.parse_search(response.json(), query)
+        context = {'films': films, 'query': payload['query'], 'people': people}
         return render(request, 'films/search.html', context)
 
     else:
         form = FilmSearchForm()
 
     return render(request, 'films/search.html', {'form': FilmSearchForm})
-
-
-# def index(request):
-#     payload = {'api_key': 'e6b24f5371e6fd462a8a26499fd466b2',
-#                'query': 'Avengers'}
-#     response = requests.get(
-#         'https://api.themoviedb.org/3/search/movie', params=payload)
-
-#     # ia = IMDb()
-#     # movies = ia.search_movie('Avengers')
-#     # print(movies)
-#     # movie = ia.get_movie(movies[0].getID())
-#     # print(movie['cast'])
-#     print(request.user.id)
-#     films = film_helper.parse_film_search(response.json())
-#     context = {'result': films, 'query': payload['query']}
-#     return render(request, 'films/index.html', context)

@@ -10,7 +10,7 @@ class FilmSearchForm(forms.Form):
 class FilmForm(ModelForm):
     class Meta:
         model = Film
-        fields = ['score', 'comments', 'date_watched']
+        fields = ['score', 'comments']
         # Thanks to https://stackoverflow.com/questions/49440853/django-2-0-modelform-datefield-not-displaying-as-a-widget
         widgets = {
             'date_watched': forms.DateInput(format=('%m/%d/%Y'), attrs={'class': 'form-control', 'placeholder': 'Select a date', 'type': 'date'}),

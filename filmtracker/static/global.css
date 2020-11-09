@@ -13,17 +13,24 @@ body {
   background-color: #eeeeee;
 }
 
-table {
-  margin: 20px 20px;
-}
-
 .navbar-custom {
   background-color: #093145;
+}
+
+.background-tv {
+  background-color: #ad2a1a;
 }
 
 .body-card {
   margin: 13px 13px;
   width: 100%;
+}
+
+/* thanks https://css-tricks.com/almanac/properties/b/box-shadow/ */
+.shadow {
+  -webkit-box-shadow: 3px 3px 5px 6px #ccc; /* Safari 3-4, iOS 4.0.2 - 4.2, Android 2.3+ */
+  -moz-box-shadow: 3px 3px 5px 6px #ccc; /* Firefox 3.5 - 3.6 */
+  box-shadow: 3px 3px 5px 6px #ccc; /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
 }
 
 #text {
@@ -34,6 +41,12 @@ table {
   background-color: #b22222;
   color: white;
 }
+
+.btn-tv {
+  background-color: #093145;
+  color: white;
+}
+
 /* .container-fluid {
   background-color: #fffafa;
 } */
