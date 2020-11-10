@@ -1,11 +1,13 @@
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlencode
-from os import environ
-from dotenv import load_dotenv
-load_dotenv()
+import os
 
-movie_api_key = environ.get("MOVIE_DB_KEY")
+
+movie_api_key = os.getenv("MOVIE_DB_KEY")
+print(movie_api_key)
+
+nyt_api_key = os.getenv("NYT_KEY")
 
 
 def parse_search(response, query):
@@ -43,7 +45,7 @@ def parse_search_item(item, query):
 
 
 def get_review(title, year):
-    payload = {'query': title, 'api-key': 'NrLoKOA38QIjxhhXh0y5tEIZ7jrm4l1q'}
+    payload = {'query': title, 'api-key': nyt_api_key}
     response = requests.get(
         'https://api.nytimes.com/svc/movies/v2/reviews/search.json', params=payload).json()
     for item in response['results']:
@@ -54,7 +56,7 @@ def get_review(title, year):
 
 
 def get_poster(id):
-    payload = {'api_key': 'e6b24f5371e6fd462a8a26499fd466b2'}
+    payload = {'api_key': movie_api_key}
     response = requests.get(
         f'https://api.themoviedb.org/3/movie/{id}/images', params=payload).json()
     for item in response['posters']:
@@ -63,7 +65,7 @@ def get_poster(id):
 
 
 def get_nb_credits(id):
-    payload = {'api_key': 'e6b24f5371e6fd462a8a26499fd466b2'}
+    payload = {'api_key': movie_api_key}
     response = requests.get(
         f'https://api.themoviedb.org/3/movie/{id}/credits', params=payload).json()
     crew_members = response['crew']
@@ -109,7 +111,8 @@ def get_nb_credits(id):
 
 
 def get_film_details(id):
-    payload = {'api_key': 'e6b24f5371e6fd462a8a26499fd466b2'}
+    print(movie_api_key, 'woo')
+    payload = {'api_key': movie_api_key}
     response = requests.get(
         f'https://api.themoviedb.org/3/movie/{id}', params=payload).json()
     response['genres'] = ",".join([genre['name']
@@ -118,7 +121,7 @@ def get_film_details(id):
 
 
 def get_similar_films(id):
-    payload = {'api_key': 'e6b24f5371e6fd462a8a26499fd466b2'}
+    payload = {'api_key': movie_api_key}
     response = requests.get(
         f'https://api.themoviedb.org/3/movie/{id}/similar', params=payload).json()
     similar_films = []
@@ -131,7 +134,7 @@ def get_similar_films(id):
 
 
 def get_recommendations(id):
-    payload = {'api_key': 'e6b24f5371e6fd462a8a26499fd466b2'}
+    payload = {'api_key': movie_api_key}
     response = requests.get(
         f'https://api.themoviedb.org/3/movie/{id}/recommendations', params=payload).json()
     recommended_films = []
@@ -144,7 +147,7 @@ def get_recommendations(id):
 
 
 def get_film_for_create(id):
-    payload = {'api_key': 'e6b24f5371e6fd462a8a26499fd466b2'}
+    payload = {'api_key': movie_api_key}
     response = requests.get(
         f'https://api.themoviedb.org/3/movie/{id}', params=payload).json()
     genres = get_genres(id)
@@ -166,7 +169,7 @@ def get_film_for_create(id):
 
 
 def get_genres(id):
-    payload = {'api_key': 'e6b24f5371e6fd462a8a26499fd466b2'}
+    payload = {'api_key': movie_api_key}
     genres = ""
     details = requests.get(
         f'https://api.themoviedb.org/3/movie/{id}', params=payload)

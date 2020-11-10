@@ -1,15 +1,18 @@
 import requests
+import os
+
+movie_api_key = os.getenv("MOVIE_DB_KEY")
 
 
 def get_person(id):
-    payload = {'api_key': 'e6b24f5371e6fd462a8a26499fd466b2'}
+    payload = {'api_key': movie_api_key}
     response = requests.get(
         f'https://api.themoviedb.org/3/person/{id}', params=payload).json()
     return response
 
 
 def get_movie_credits(id, known_for):
-    payload = {'api_key': 'e6b24f5371e6fd462a8a26499fd466b2'}
+    payload = {'api_key': movie_api_key}
     response = requests.get(
         f'https://api.themoviedb.org/3/person/{id}/movie_credits', params=payload).json()
     if known_for == 'Acting' or response['known_for_department'] == 'Acting':
