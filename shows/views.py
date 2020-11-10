@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from django.urls import reverse
+
 from . import tv_helper
 from .models import Show
 import requests
@@ -18,6 +20,48 @@ def index(request):
 
 def search_results(request):
     return render(request, 'tv/search.html', {})
+
+
+def add_show(request, show_id):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = ShowForm(request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            # process the data in form.cleaned_data as required
+            # ...
+            # redirect to a new URL:
+            score = form.cleaned_data['score']
+            comments = form.cleaned_data['comments']
+            date_watched = form.cleaned_data['date_watched']
+
+            show = tv_helper.get_show_for_create(show_id)
+            added_show = Show(name=show['name'],
+                              original_language=show['original_language'],
+                              original_name=show['original_name'],
+                              overview=show['overview'],
+                              popularity=show['popularity'],
+                              genres=show['genres'],
+                              vote_average=show['vote_average'],
+                              added=show['added'],
+                              type_of_show=show['type_of_show'],
+                              status=show['status'],
+                              number_of_episodes=show['number_of_episodes'],
+                              number_of_seasons=show['number_of_seasons'],
+                              score=score,
+                              comments=comments,
+                              date_watched=date_watched,
+                              movie_db_id=show['movie_db_id']
+                              )
+            added_show.save()
+            return HttpResponseRedirect(reverse('shows:view', args=(show['movie_db_id'],)))
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = ShowForm()
+
+    return render(request, 'shows/add.html', {'form': form, 'id': show_id})
 
 
 def get_season(request, id, season_number):
@@ -86,28 +130,28 @@ def search(request):
 
 def wishlist(request):
     # pylint: disable=no-member
-    context = {'films': Show.objects.filter(wishlisted=True)}
+    context = {'shows': Show.objects.filter(wishlisted=True)}
     return render(request, 'shows/wishlist.html', context)
 
 
 def wishlist_show(request, movie_id):
     return None
-    # film = film_helper.get_film_for_create(movie_id)
+    # show = show_helper.get_show_for_create(movie_id)
 
-    # wishlisted_film = Film(title=film['title'],
-    #                     original_language=film['original_language'],
-    #                     overview=film['overview'],
-    #                     popularity=film['popularity'],
-    #                     genres=film['genres'],
-    #                     runtime=film['runtime'],
-    #                     budget=film['budget'],
-    #                     revenue=film['revenue'],
-    #                     vote_average=film['vote_average'],
+    # wishlisted_show = show(title=show['title'],
+    #                     original_language=show['original_language'],
+    #                     overview=show['overview'],
+    #                     popularity=show['popularity'],
+    #                     genres=show['genres'],
+    #                     runtime=show['runtime'],
+    #                     budget=show['budget'],
+    #                     revenue=show['revenue'],
+    #                     vote_average=show['vote_average'],
     #                     wishlisted=True,
     #                     date_watched=date.today(),
     #                     added=False,
-    #                     release_date=film['release_date'],
-    #                     movie_db_id=film['movie_db_id']
+    #                     release_date=show['release_date'],
+    #                     movie_db_id=show['movie_db_id']
     #                     )
-    # wishlisted_film.save()
-    # return HttpResponseRedirect('/films/wishlist')
+    # wishlisted_show.save()
+    # return HttpResponseRedirect('/shows/wishlist')

@@ -22,10 +22,10 @@ def index(request):
 
 
 def get_film(request, id):
-    nb_credits = film_helper.get_nb_credits(id)
+    nb_credits, cast = film_helper.get_nb_credits(id)
     film = film_helper.get_film_details(id)
-    similar = film_helper.get_similar_films(id)
-    film['similar'] = similar
+    # similar = film_helper.get_similar_films(id)
+    # film['similar'] = similar
     recommendations = film_helper.get_recommendations(id)
     # pylint: disable=no-member
     wishlisted = Film.objects.filter(
@@ -36,7 +36,8 @@ def get_film(request, id):
     year = film['release_date'].split("-")[0]
     review = film_helper.get_review(film['title'], year)
     poster = film_helper.get_poster(id)
-    return render(request, f'films/film.html', {'film': film, 'credits': nb_credits, 'wishlisted': wishlisted, 'watched': watched, 'review': review, 'poster': poster})
+    return render(request, f'films/film.html', {'film': film, 'credits': nb_credits, 'cast': cast,
+                                                'wishlisted': wishlisted, 'watched': watched, 'review': review, 'poster': poster})
 
 
 def search_results(request):

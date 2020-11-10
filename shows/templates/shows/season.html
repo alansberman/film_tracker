@@ -37,9 +37,11 @@
     <div id="text">
       <div class="row">
         <div class="col">
+          {% if season.overview %}
           <h5>Overview</h5>
           <p>{{ season.overview }}</p>
           <hr />
+          {% endif %}
           <h5>Episodes</h5>
           <table class="table table-striped" style="width: 100%">
             <thead class="thead-dark">
@@ -55,7 +57,7 @@
               <tr>
                 <td>
                   <a
-                    href="{% url 'episode' show.id season.season_number row.episode_number %}"
+                    href="{% url 'shows:episode' show.id season.season_number row.episode_number %}"
                     >{{ row.name }}</a
                   >
                 </td>

@@ -7,7 +7,11 @@
       <br />
       <h2>{{ film.title }}</h2>
       {% if not watched and not wishlisted %}
-      <button type="button" class="btn btn-info" style="margin-bottom: 10px; margin-top: 10px;">
+      <button
+        type="button"
+        class="btn btn-info"
+        style="margin-bottom: 10px; margin-top: 10px"
+      >
         <a href="{% url 'wishlist-movie' film.id %}" style="color: white"
           >Wishlist</a
         >
@@ -46,9 +50,8 @@
       </div>
     </div>
   </div>
-
-
-  <div class="card body-card shadow">
+  <br />
+  <div class="card shadow">
     <div id="text">
       <div class="row">
         <div class="col">
@@ -56,15 +59,16 @@
           <p>{{ film.overview }}</p>
           <hr />
           {% if review %}
-          <h5><a href="{{review.link.url}}">New York Times Review</a>
+          <h5>
+            <a href="{{review.link.url}}">New York Times Review</a>
             {% if review.critics_pick == 1 %}
             <small><b>Critic's Pick</b></small>
             {% endif %}
           </h5>
           <p>"{{ review.summary_short}}" <span> - {{review.byline}}</span></p>
-          <hr>
+          <hr />
           {% endif %}
-     
+          <!--      
           <button
             class="btn btn-primary"
             type="button"
@@ -74,8 +78,8 @@
             aria-controls="collapseExample"
           >
             Similar Films
-          </button>
-          <button
+          </button> -->
+          <!-- <button
             class="btn btn-primary"
             type="button"
             data-toggle="collapse"
@@ -97,23 +101,32 @@
           <div class="collapse" id="recommendations">
             <br />
             <div class="card card-body">
-              <div>
-                {% for item in film.recommendations %}
-                <a href="{% url 'view' item.id %}">{{ item.title }}</a> |
-                <!---->
-                {% endfor %}
-                <!---->
-              </div>
-            </div>
+              <div> -->
+          <div>
+            <h5>Recommendations</h5>
+            {% for item in film.recommendations %}
+            <a href="{% url 'view' item.id %}">{{ item.title }}</a> |
+            <!---->
+            {% endfor %}
+            <!---->
           </div>
           <hr />
+          {% if cast %}
+          <h5>Cast</h5>
+          {% for person in cast %}
+          <a href="/people/{{person.id }}/view">{{ person.name }}</a> |
+          <!---->
+          {% endfor %}
+          <hr />
+          {% endif %}
+          <!---->
           {% load humanize %}
+          <!---->
           {% if film.budget > 0 %}
           <h5>Budget</h5>
           ${{ film.budget|intcomma }}
           <hr />
-          {% endif %}
-          {% if film.revenue > 0 %}
+          {% endif %} {% if film.revenue > 0 %}
           <h5>Box Office</h5>
           ${{ film.revenue|intcomma }}
           <hr />
@@ -145,20 +158,22 @@
             <a href="/people/{{person.id }}/view">{{ person.name }}</a>
             {% endfor %}
           </div>
-
-      
         </div>
         {% if poster %}
         <div class="col text-center">
-          <br>
-          <img src="{{poster}}" style="width: 500px; height: 550px;" alt="poster" >
+          <br />
+          <img
+            src="{{poster}}"
+            style="width: 500px; height: 550px"
+            alt="poster"
+          />
         </div>
         {% endif %}
+      </div>
     </div>
   </div>
-</div>
 
-<!-- <table class="table table-striped">
+  <!-- <table class="table table-striped">
     <thead class="thead-dark"></thead>
     <tbody>
       <tr>
@@ -190,3 +205,4 @@
       </tr>
     </tbody>
   </table> -->
+</div>

@@ -10,8 +10,8 @@ class ShowSearchForm(forms.Form):
 class ShowForm(ModelForm):
     class Meta:
         model = Show
-        fields = ['score', 'comments']  # , 'date_watched'
-        # Thanks to https://stackoverflow.com/questions/49440853/django-2-0-modelform-datefield-not-displaying-as-a-widget
-        # widgets = {
-        #     'date_watched': forms.DateInput(format=('%m/%d/%Y'), attrs={'class': 'form-control', 'placeholder': 'Select a date', 'type': 'date'}),
-        # }
+        fields = ['score', 'comments', 'date_watched']  # , 'date_watched'
+        # Thanks to https: // stackoverflow.com/questions/49440853/django-2-0-modelform-datefield-not-displaying-as-a-widget
+        widgets = {
+            'date_watched': forms.DateInput(format=('%m/%d/%Y'), attrs={'class': 'form-control', 'placeholder': 'Select a date', 'type': 'date'}),
+        }

@@ -18,6 +18,7 @@ class Show(models.Model):
     genres = models.CharField(max_length=200, null=True)
     runtime = models.IntegerField(null=True)
     vote_average = models.FloatField(null=True)
+    date_watched = models.DateField(null=True)
     added = models.BooleanField(null=True)
     wishlisted = models.BooleanField(null=True)
     score = models.FloatField(null=True)

@@ -5,8 +5,6 @@ import os
 
 
 movie_api_key = os.getenv("MOVIE_DB_KEY")
-print(movie_api_key)
-
 nyt_api_key = os.getenv("NYT_KEY")
 
 
@@ -68,6 +66,13 @@ def get_nb_credits(id):
     payload = {'api_key': movie_api_key}
     response = requests.get(
         f'https://api.themoviedb.org/3/movie/{id}/credits', params=payload).json()
+    cast_members = response['cast']
+    cast = []
+    for member in cast_members[:5]:
+        cast.append({
+            'name': member['name'],
+            'id': member['id']
+        })
     crew_members = response['crew']
     producers = []
     screenplay = []
@@ -107,7 +112,7 @@ def get_nb_credits(id):
         'story': story,
         'associate_producer': assoc_producer,
         'director_of_photography': photog
-    }
+    }, cast
 
 
 def get_film_details(id):
