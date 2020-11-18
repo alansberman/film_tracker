@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 import requests
 from . import film_helper
 import json
@@ -22,7 +22,7 @@ movie_api_key = os.getenv("MOVIE_DB_KEY")
 
 def index(request):
     # pylint: disable=no-member
-    films = Film.objects.filter(added=True)
+    films = Film.objects.filter(added=True).order_by('-score')
     film_paginator = Paginator(films, 10)
     page = request.GET.get('page')
     try:
@@ -50,6 +50,8 @@ def get_film(request, id):
     watched = Film.objects.filter(
         added=True, movie_db_id=film['id']).exists()
     film['recommendations'] = recommendations
+    film['keywords'] = " | ".join([k['name']
+                                   for k in film_helper.get_keywords(id)])
     year = film['release_date'].split("-")[0]
     review = film_helper.get_review(film['title'], year)
     poster = film_helper.get_poster(id)
@@ -207,3 +209,21 @@ def top(request):
 def upcoming(request):
     films = film_helper.get_upcoming_films()
     return render(request, 'films/upcoming.html', {'films': films})
+
+
+def like(request, id):
+    # pylint: disable=no-member
+    film = Film.objects.filter(movie_db_id=id)
+    film.update(liked=True)
+    for item in film:
+        item.save()
+    return redirect(request.META['HTTP_REFERER'])
+
+
+def dislike(request, id):
+    # pylint: disable=no-member
+    film = Film.objects.filter(movie_db_id=id)
+    film.update(liked=False)
+    for item in film:
+        item.save()
+    return redirect(request.META['HTTP_REFERER'])

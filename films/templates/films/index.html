@@ -19,6 +19,7 @@
           <th scope="col">Average Score</th>
           <th scope="col">My Score</th>
           <th scope="col">Date Watched</th>
+          <th scope="col">Status</th>
         </tr>
       </thead>
       <tbody>
@@ -31,6 +32,32 @@
           <td>{{ row.vote_average }}</td>
           <td>{{ row.score }}</td>
           <td>{{ row.date_watched|date:"SHORT_DATE_FORMAT" }}</td>
+          <td style="display: inline-block">
+            {% if not row.liked and row.liked is not False %}
+            <button type="button" class="btn btn-success">
+              <a
+                href="{% url 'films:like' row.movie_db_id %}"
+                style="color: white"
+                >Like</a
+              >
+            </button>
+            <button type="button" class="btn btn-danger">
+              <a
+                href="{% url 'films:dislike' row.movie_db_id %}"
+                style="color: white"
+                >Dislike</a
+              >
+            </button>
+            {% endif %}
+            <!---->
+            {% if row.liked %}
+            <span style="color: #3eaf7c">Liked</span>
+            {% endif %}
+            <!--  -->
+            {% if row.liked is False %}
+            <span style="color: red">Disliked</span>
+            {% endif %}
+          </td>
         </tr>
         {% endfor %}
       </tbody>

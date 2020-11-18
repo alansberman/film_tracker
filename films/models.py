@@ -16,9 +16,17 @@ class Film(models.Model):
     budget = models.IntegerField(null=True)
     revenue = models.IntegerField(null=True)
     vote_average = models.FloatField(null=True)
+    liked = models.BooleanField(null=True)
     added = models.BooleanField(null=True)
     wishlisted = models.BooleanField(null=True)
     score = models.FloatField(null=True)
+    producers = models.CharField(max_length=200, null=True)
+    cast = models.CharField(max_length=200, null=True)
+    keywords = models.TextField(null=True)
+    keyword_ids = models.CharField(max_length=300, null=True)
+    critics_pick = models.BooleanField(null=True)
+    director = models.CharField(max_length=200, null=True)
+    director_of_photography = models.CharField(max_length=200, null=True)
     date_watched = models.DateTimeField('Date Added', null=True)
 
     def __str__(self):

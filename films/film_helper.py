@@ -25,6 +25,14 @@ def parse_search(response, query):
     return films, people
 
 
+def get_keywords(id):
+    payload = {'api_key': movie_api_key}
+    response = requests.get(
+        f'https://api.themoviedb.org/3/movie/{id}/keywords', params=payload).json()
+    keywords = [keyword for keyword in response['keywords']]
+    return keywords
+
+
 def parse_search_item(item, query):
     if item['media_type'] == 'movie':
         if (query.upper() in item['title'].upper()) or (query.upper() in item['original_title']):
