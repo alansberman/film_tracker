@@ -4,7 +4,7 @@
     <div class="col"></div>
     <div class="col text-center">
       <br />
-      <h2>My Wishlisted Shows</h2>
+      <h2>My Liked People</h2>
       <br />
     </div>
     <div class="col"></div>
@@ -15,24 +15,27 @@
       <thead class="thead-info">
         <tr>
           <th scope="col">Name</th>
-          <th scope="col">Genres</th>
-          <th scope="col">Average Score</th>
-          <th scope="col">Date Wishlisted</th>
+          <th scope="col">Known For</th>
         </tr>
       </thead>
       <tbody>
-        {% for row in shows %}
+        {% for row in people %}
         <tr>
           <td>
-            <a href="{% url 'shows:view' row.movie_db_id %}">{{ row.name }}</a>
+            <a href="{% url 'people:view' row.movie_db_id %}">{{ row.name }}</a>
           </td>
-          <td>{{ row.genres }}</td>
-          <td>{{ row.vote_average }}</td>
-          <td>{{ row.date_watched|date:"SHORT_DATE_FORMAT" }}</td>
+          <td>{{ row.known_for }}</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
+    <div style="margin-left: 50px">
+      {% block content %}
+      <!---->
+      {% include "./pagination.html" with page=people %}
+      <!---->
+      {% endblock %}
+    </div>
   </div>
   <div class="row"></div>
 </div>

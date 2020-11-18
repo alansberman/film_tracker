@@ -1,0 +1,35 @@
+<div class="pagination">
+  {% if page.paginator.num_pages %}
+
+  <!---->
+  <!---->
+  <nav aria-label="...">
+    <ul class="pagination">
+      {% if page.has_previous %}
+      <li class="page-item">
+        <a
+          class="page-link"
+          href="?page={{ page.previous_page_number }}&movie={{ movie }}"
+          >Previous</a
+        >
+        {% endif %}
+      </li>
+      {% for n in page.paginator.page_range %}
+      <li class="page-item {% if n == page.number %} active {% endif %}">
+        <a class="page-link" href="?page={{ n }}&movie={{ movie }}">{{n}}</a>
+      </li>
+      {% endfor %}
+      <!--  -->
+      {% if page.has_next %}
+      <li class="page-item">
+        <a
+          class="page-link"
+          href="?page={{ page.next_page_number }}&movie={{ movie }}"
+          >Next</a
+        >
+      </li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>

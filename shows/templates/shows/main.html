@@ -49,20 +49,22 @@
             <a class="nav-link" href="/">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/history">History</a>
+            <a class="nav-link" href="{% url 'shows:popular' %}">Popular</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/shows/wishlist">Wishlist</a>
+            <a class="nav-link" href="{% url 'shows:wishlist-index' %}"
+              >Wishlist</a
+            >
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/search">Search</a>
+            <a class="nav-link" href="{% url 'shows:search' %}">Search</a>
           </li>
         </ul>
       </div>
       <form
         class="form-inline my-2 my-lg-0"
         method="GET"
-        action="/shows/search"
+        action="{% url 'shows:search' %}"
       >
         <input
           class="form-control mr-sm-2"

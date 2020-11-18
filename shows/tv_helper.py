@@ -7,7 +7,7 @@ movie_api_key = os.getenv("MOVIE_DB_KEY")
 def parse_search(response, query):
     shows = []
     people = []
-    for item in response['results'][:10]:
+    for item in response['results']:
         if item['media_type'] == 'tv':
             shows.append(parse_search_item(item, query))
         elif item['media_type'] == 'person':
@@ -37,6 +37,17 @@ def get_genres():
         f'https://api.themoviedb.org/3/genre/tv/list', params=payload)
     genres = details.json()['genres']
     return genres
+
+
+def get_popular():
+    payload = {'api_key': movie_api_key}
+    response = requests.get(
+        f'https://api.themoviedb.org/3/tv/popular', params=payload).json()['results']
+    genres = get_genres()
+    for item in response:
+        item['genres'] = " | ".join([genre['name']
+                                     for genre in genres if genre['id'] in item['genre_ids']])
+    return response
 
 
 def get_cast(id):

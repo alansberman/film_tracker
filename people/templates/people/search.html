@@ -1,0 +1,51 @@
+{% include './main.html' %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col"></div>
+    <div class="col">
+      <h2>Search Results for "{{ query }}":</h2>
+    </div>
+    <div class="col"></div>
+  </div>
+  <div class="row">
+    <div class="col">
+      {% if people %}
+      <table class="table table-striped">
+        <thead class="thead-dark">
+          <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Popularity</th>
+            <th scope="col">Known For</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in people %}
+          <!---->
+          {% if row %}
+          <tr>
+            <td>
+              <a href="{% url 'people:view' row.id %}">{{ row.name }}</a>
+            </td>
+            <td>{{ row.popularity }}</td>
+            <td>
+              <a href="{% url 'films:view' row.known_for.id %}"
+                >{{ row.known_for.title }}</a
+              >
+            </td>
+          </tr>
+          {% endif %}
+          <!---->
+
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+      <!----->
+      {% block content %}
+      <!---->
+      {% include "./pagination.html" with page=people %}
+      <!---->
+      {% endblock %}
+    </div>
+  </div>
+</div>

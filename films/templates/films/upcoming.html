@@ -1,10 +1,10 @@
-{% include 'films/main.html' %}
+{% include './main.html' %}
 <div class="container-fluid">
   <div class="row">
     <div class="col"></div>
     <div class="col text-center">
       <br />
-      <h2>My Wishlisted Films</h2>
+      <h2>Upcoming Releases</h2>
       <br />
     </div>
     <div class="col"></div>
@@ -17,20 +17,20 @@
           <th scope="col">Title</th>
           <th scope="col">Genres</th>
           <th scope="col">Average Score</th>
-          <th scope="col">Date Wishlisted</th>
-          <th scope="col"></th>
+          <th scope="col">Release Date</th>
+          <th scope="col">Watched Status</th>
         </tr>
       </thead>
       <tbody>
         {% for row in films %}
         <tr>
           <td>
-            <a href="{% url 'films:view' row.movie_db_id %}">{{ row.title }}</a>
+            <a href="{% url 'films:view' row.id %}">{{ row.title }}</a>
           </td>
           <td>{{ row.genres }}</td>
           <td>{{ row.vote_average }}</td>
-          <td>{{ row.date_watched|date:"SHORT_DATE_FORMAT" }}</td>
-          <td>
+          <td>{{ row.release_date }}</td>
+          <td style="display: inline-block">
             <form
               class="form-inline"
               method="GET"
@@ -46,18 +46,19 @@
                 Add
               </button>
             </form>
+
+            <button type="button" class="btn btn-info">
+              <a
+                href="{% url 'films:wishlist-film' row.id %}"
+                style="color: white"
+                >Wishlist</a
+              >
+            </button>
           </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
-    <div style="margin-left: 50px">
-      {% block content %}
-      <!---->
-      {% include "./pagination.html" with page=films %}
-      <!---->
-      {% endblock %}
-    </div>
   </div>
   <div class="row"></div>
 </div>

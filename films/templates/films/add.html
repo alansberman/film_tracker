@@ -8,7 +8,7 @@
   <div class="row">
     <div class="col"></div>
     <div class="col">
-      <form action="/{{ id }}/add" method="post">
+      <form action="{% url 'films:add' id %}" method="post">
         {% csrf_token %} {{ form.as_p }}
         <input type="submit" value="Submit" />
       </form>

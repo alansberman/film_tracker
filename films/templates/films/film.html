@@ -12,9 +12,17 @@
         class="btn btn-info"
         style="margin-bottom: 10px; margin-top: 10px"
       >
-        <a href="{% url 'wishlist-movie' film.id %}" style="color: white"
+        <a href="{% url 'films:wishlist-film' film.id %}" style="color: white"
           >Wishlist</a
         >
+      </button>
+      {% endif %} {% if not watched %}
+      <button
+        type="button"
+        class="btn btn-success"
+        style="margin-bottom: 10px; margin-top: 10px"
+      >
+        <a href="{% url 'films:add' film.id %}" style="color: white">Add</a>
       </button>
       {% endif %}
     </div>
@@ -35,7 +43,9 @@
         <div class="card-body">
           {% for director in credits.director %}
           <h5 class="card-title">
-            <a href="/people/{{director.id }}/view">{{ director.name }}</a>
+            <a href="{% url 'people:view' director.id %}"
+              >{{ director.name }}</a
+            >
           </h5>
           {% endfor %}
         </div>
@@ -68,44 +78,10 @@
           <p>"{{ review.summary_short}}" <span> - {{review.byline}}</span></p>
           <hr />
           {% endif %}
-          <!--      
-          <button
-            class="btn btn-primary"
-            type="button"
-            data-toggle="collapse"
-            data-target="#similar"
-            aria-expanded="false"
-            aria-controls="collapseExample"
-          >
-            Similar Films
-          </button> -->
-          <!-- <button
-            class="btn btn-primary"
-            type="button"
-            data-toggle="collapse"
-            data-target="#recommendations"
-            aria-expanded="false"
-            aria-controls="collapseExample"
-          >
-            Recommendations
-          </button>
-          <div class="collapse" id="similar">
-            <br />
-            <div class="card card-body">
-              <div>
-                {% for item in film.similar %}
-                <a href="{% url 'view' item.id %}"">{{ item.title }}</a> | {% endfor %}
-              </div>
-            </div>
-          </div>
-          <div class="collapse" id="recommendations">
-            <br />
-            <div class="card card-body">
-              <div> -->
           <div>
             <h5>Recommendations</h5>
             {% for item in film.recommendations %}
-            <a href="{% url 'view' item.id %}">{{ item.title }}</a> |
+            <a href="{% url 'films:view' item.id %}">{{ item.title }}</a> |
             <!---->
             {% endfor %}
             <!---->
@@ -114,7 +90,7 @@
           {% if cast %}
           <h5>Cast</h5>
           {% for person in cast %}
-          <a href="/people/{{person.id }}/view">{{ person.name }}</a> |
+          <a href="{% url 'people:view' person.id %}">{{ person.name }}</a> |
           <!---->
           {% endfor %}
           <hr />
@@ -135,27 +111,30 @@
           <hr />
           <h5>Producers</h5>
           {% for producer in credits.producers %}
-          <a href="/people/{{producer.id }}/view">{{ producer.name }}</a>
+          <a href="{% url 'people:view' producer.id %}">{{ producer.name }}</a>
           {% endfor %}
           <hr />
+          {% if scredits.screenplay %}
           <h5>Screenplay by</h5>
           <div>
             {% for writer in credits.screenplay %}
-            <a href="/people/{{writer.id }}/view">{{ writer.name }}</a>
+            <a href="{% url 'people:view' writer.id %}">{{ writer.name }}</a>
             {% endfor %}
           </div>
           <hr />
+          {% endif %}
+          <!---->
           {% if credits.story %}
           <h5>Story by</h5>
           {% for writer in credits.story %}
-          <a href="/people/{{writer.id }}/view">{{ writer.name }}</a>
+          <a href="{% url 'people:view' writer.id %}">{{ writer.name }}</a>
           {% endfor %}
           <hr />
           {% endif %}
           <h5>Director of Photography</h5>
           <div>
             {% for person in credits.director_of_photography %}
-            <a href="/people/{{person.id }}/view">{{ person.name }}</a>
+            <a href="{% url 'people:view' person.id %}">{{ person.name }}</a>
             {% endfor %}
           </div>
         </div>

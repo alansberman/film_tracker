@@ -8,7 +8,9 @@ import json
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .forms import ShowSearchForm, ShowForm
+import os
 
+movie_api_key = os.getenv("MOVIE_DB_KEY")
 # Create your views here.
 
 
@@ -103,7 +105,7 @@ def search(request):
             # redirect to a new URL:
             query = form.cleaned_data['search_query']
             payload = {
-                'api_key': 'e6b24f5371e6fd462a8a26499fd466b2', 'query': query}
+                'api_key': movie_api_key, 'query': query}
             response = requests.get(
                 'https://api.themoviedb.org/3/search/multi', params=payload)
             shows, people = tv_helper.parse_search(response.json(), query)
@@ -115,7 +117,7 @@ def search(request):
     elif request.GET.get('query'):
         query = request.GET.get('query')
         payload = {
-            'api_key': 'e6b24f5371e6fd462a8a26499fd466b2', 'query': query}
+            'api_key': movie_api_key, 'query': query}
         response = requests.get(
             'https://api.themoviedb.org/3/search/multi', params=payload)
         shows, people = tv_helper.parse_search(response.json(), query)
@@ -134,24 +136,30 @@ def wishlist(request):
     return render(request, 'shows/wishlist.html', context)
 
 
-def wishlist_show(request, movie_id):
-    return None
-    # show = show_helper.get_show_for_create(movie_id)
+def wishlist_show(request, show_id):
+    show = tv_helper.get_show_for_create(show_id)
+    wishlisted_show = Show(name=show['name'],
+                           original_language=show['original_language'],
+                           original_name=show['original_name'],
+                           overview=show['overview'],
+                           popularity=show['popularity'],
+                           genres=show['genres'],
+                           vote_average=show['vote_average'],
+                           added=False,
+                           type_of_show=show['type_of_show'],
+                           status=show['status'],
+                           number_of_episodes=show['number_of_episodes'],
+                           number_of_seasons=show['number_of_seasons'],
+                           score=None,
+                           comments=None,
+                           date_watched=None,
+                           wishlisted=True,
+                           movie_db_id=show['movie_db_id']
+                           )
+    wishlisted_show.save()
+    return HttpResponseRedirect(reverse('shows:view', args=(show['movie_db_id'],)))
 
-    # wishlisted_show = show(title=show['title'],
-    #                     original_language=show['original_language'],
-    #                     overview=show['overview'],
-    #                     popularity=show['popularity'],
-    #                     genres=show['genres'],
-    #                     runtime=show['runtime'],
-    #                     budget=show['budget'],
-    #                     revenue=show['revenue'],
-    #                     vote_average=show['vote_average'],
-    #                     wishlisted=True,
-    #                     date_watched=date.today(),
-    #                     added=False,
-    #                     release_date=show['release_date'],
-    #                     movie_db_id=show['movie_db_id']
-    #                     )
-    # wishlisted_show.save()
-    # return HttpResponseRedirect('/shows/wishlist')
+
+def popular(request):
+    shows = tv_helper.get_popular()
+    return render(request, 'shows/popular.html', {'shows': shows})

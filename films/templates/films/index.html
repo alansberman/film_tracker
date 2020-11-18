@@ -1,11 +1,11 @@
-{% include 'films/main.html' %} 
+{% include 'films/main.html' %}
 <div class="container-fluid">
   <div class="row">
     <div class="col"></div>
     <div class="col text-center">
-      <br>
+      <br />
       <h2>My Films</h2>
-      <br>
+      <br />
     </div>
     <div class="col"></div>
   </div>
@@ -24,7 +24,9 @@
       <tbody>
         {% for row in films %}
         <tr>
-          <td><a href={{ row.movie_db_id }}/view }}>{{ row.title }}</a></td>
+          <td>
+            <a href="{% url 'films:view' row.movie_db_id %}">{{ row.title }}</a>
+          </td>
           <td>{{ row.genres }}</td>
           <td>{{ row.vote_average }}</td>
           <td>{{ row.score }}</td>
@@ -33,6 +35,13 @@
         {% endfor %}
       </tbody>
     </table>
+    <div style="margin-left: 50px">
+      {% block content %}
+      <!---->
+      {% include "./pagination.html" with page=films %}
+      <!---->
+      {% endblock %}
+    </div>
   </div>
   <div class="row"></div>
 </div>

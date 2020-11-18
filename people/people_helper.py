@@ -13,6 +13,16 @@ def get_person(id):
     return response
 
 
+def get_person_for_create(id):
+    person = get_person(id)
+    person_object = {
+        'name':  person.get('name', None),
+        'movie_db_id': person.get('id', None),
+        'known_for': person.get('known_for_department', None)
+    }
+    return person_object
+
+
 def get_credits(id, known_for):
     payload = {'api_key': movie_api_key}
     response = requests.get(
@@ -81,3 +91,23 @@ def parse_crew_credits(credits):
                 'show_url': '/shows/'+str(credit['id'])+'/view'
             })
     return movie_credits, tv_credits
+
+
+def parse_search(response, query):
+    people = []
+    for item in response['results']:
+        people.append(parse_search_item(item, query))
+    return people
+
+
+def parse_search_item(item, query):
+    if query.upper() in item['name'].upper():
+        if item['known_for']:
+            if item['known_for'][0]['media_type'] != 'tv':
+                person = {
+                    'id': item['id'],
+                    'name': item['name'],
+                    'known_for': item['known_for'][0],
+                    'popularity': item['popularity']
+                }
+                return person

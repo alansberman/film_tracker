@@ -32,9 +32,9 @@
         <thead class="thead-dark">
           <tr>
             <th scope="col">Name</th>
-            <th scope="col">Genres</th>
+            <th scope="col">Popularity</th>
             <th scope="col">Average Score</th>
-            <th scope="col">Release Date</th>
+            <th scope="col">First Air Date</th>
             <th scope="col">Watched Status</th>
           </tr>
         </thead>
@@ -45,11 +45,11 @@
           {% if row %}
           <tr>
             <td>
-              <a href="{% url 'view' row.id %}">{{ row.name }}</a>
+              <a href="{% url 'shows:view' row.id %}">{{ row.name }}</a>
             </td>
-            <td>{{ row.genres }}</td>
+            <td>{{ row.popularity }}</td>
             <td>{{ row.vote_average }}</td>
-            <td>{{ row.release_date }}</td>
+            <td>{{ row.first_air_date }}</td>
             <td style="display: inline-block">
               <form
                 class="form-inline"
@@ -68,7 +68,9 @@
               </form>
 
               <button type="button" class="btn btn-info">
-                <a href="{% url 'wishlist-movie' row.id %}" style="color: white"
+                <a
+                  href="{% url 'shows:wishlist-show' row.id %}"
+                  style="color: white"
                   >Wishlist</a
                 >
               </button>
@@ -81,6 +83,9 @@
       </table>
     </div>
   </div>
+  {% endif %}
+  <!---->
+  {% if people %}
   <div class="row">
     <div class="col">
       <table class="table table-striped">
@@ -98,7 +103,7 @@
           {% if row %}
           <tr>
             <td>
-              <a href="/people/{{row.id}}/view">{{ row.name }}</a>
+              <a href="{% url 'people:view' row.id %}">{{ row.name }}</a>
             </td>
             <td>{{ row.popularity }}</td>
             <td>

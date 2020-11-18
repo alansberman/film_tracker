@@ -49,13 +49,21 @@
             <a class="nav-link" href="/">Home </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/history">History</a>
+            <a class="nav-link" href="{% url 'films:top' %}">Top</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/films/wishlist">Wishlist</a>
+            <a class="nav-link" href="{% url 'films:popular' %}">Popular</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/films/search">Search</a>
+            <a class="nav-link" href="{% url 'films:upcoming' %}">Upcoming</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'films:wishlist-index' %}"
+              >Wishlist</a
+            >
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'films:search' %}">Search</a>
           </li>
         </ul>
       </div>

@@ -9,16 +9,33 @@ from django.http import HttpResponse, HttpResponseRedirect
 from imdb import IMDb
 from .models import Film
 from .forms import FilmSearchForm, FilmForm
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 # create an instance of the IMDb class
 
 # https://api.themoviedb.org/3/search/movie
+import os
+
+
+movie_api_key = os.getenv("MOVIE_DB_KEY")
 
 
 def index(request):
     # pylint: disable=no-member
-    context = {'films': Film.objects.filter(added=True)}
-    return render(request, 'films/index.html', context)
+    films = Film.objects.filter(added=True)
+    film_paginator = Paginator(films, 10)
+    page = request.GET.get('page')
+    try:
+        films = film_paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer deliver the first page
+        films = film_paginator.page(1)
+    except EmptyPage:
+        # If page is out of range deliver last page of results
+        films = film_paginator.page(film_paginator.num_pages)
+    if not page:
+        films = film_paginator.page(1)
+    return render(request, 'films/index.html', {'films': films})
 
 
 def get_film(request, id):
@@ -109,8 +126,20 @@ def wishlist_movie(request, movie_id):
 
 def wishlist(request):
     # pylint: disable=no-member
-    context = {'films': Film.objects.filter(wishlisted=True)}
-    return render(request, 'films/wishlist_index.html', context)
+    films = Film.objects.filter(wishlisted=True)
+    film_paginator = Paginator(films, 10)
+    page = request.GET.get('page')
+    try:
+        films = film_paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer deliver the first page
+        films = film_paginator.page(1)
+    except EmptyPage:
+        # If page is out of range deliver last page of results
+        films = film_paginator.page(film_paginator.num_pages)
+    if not page:
+        films = film_paginator.page(1)
+    return render(request, 'films/wishlist_index.html', {'films': films})
 
 
 def search(request):
@@ -125,7 +154,7 @@ def search(request):
             # redirect to a new URL:
             query = form.cleaned_data['search_query']
             payload = {
-                'api_key': 'e6b24f5371e6fd462a8a26499fd466b2', 'query': query}
+                'api_key': movie_api_key, 'query': query}
             response = requests.get(
                 'https://api.themoviedb.org/3/search/multi', params=payload)
             films, people = film_helper.parse_search(response.json(), query)
@@ -137,14 +166,44 @@ def search(request):
     elif request.GET.get('query'):
         query = request.GET.get('query')
         payload = {
-            'api_key': 'e6b24f5371e6fd462a8a26499fd466b2', 'query': query}
+            'api_key': movie_api_key, 'query': query}
         response = requests.get(
             'https://api.themoviedb.org/3/search/multi', params=payload)
         films, people = film_helper.parse_search(response.json(), query)
-        context = {'films': films, 'query': payload['query'], 'people': people}
+
+        film_paginator = Paginator(films, 10)
+        page = request.GET.get('page')
+        try:
+            films = film_paginator.page(page)
+        except PageNotAnInteger:
+            # If page is not an integer deliver the first page
+            films = film_paginator.page(1)
+        except EmptyPage:
+            # If page is out of range deliver last page of results
+            films = film_paginator.page(film_paginator.num_pages)
+        if not page:
+            films = film_paginator.page(1)
+
+        context = {'films': films,
+                   'query': payload['query'], 'people': people, 'page': page}
         return render(request, 'films/search.html', context)
 
-    else:
+    elif not request.GET.get('page'):
         form = FilmSearchForm()
 
     return render(request, 'films/search.html', {'form': FilmSearchForm})
+
+
+def popular(request):
+    films = film_helper.get_popular()
+    return render(request, 'films/popular.html', {'films': films})
+
+
+def top(request):
+    films = film_helper.get_top_rated()
+    return render(request, 'films/top.html', {'films': films})
+
+
+def upcoming(request):
+    films = film_helper.get_upcoming_films()
+    return render(request, 'films/upcoming.html', {'films': films})

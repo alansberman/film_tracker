@@ -13,7 +13,7 @@ def parse_search(response, query):
     people = []
     # credit = requests.get(
     #     f'https://api.themoviedb.org/3/movie/{response["results"][0]["id"]}/credits', params=payload)
-    for item in response['results'][:10]:
+    for item in response['results']:
         if item['media_type'] == 'movie':
             films.append(parse_search_item(item, query))
         elif item['media_type'] == 'person':
@@ -28,18 +28,19 @@ def parse_search(response, query):
 def parse_search_item(item, query):
     if item['media_type'] == 'movie':
         if (query.upper() in item['title'].upper()) or (query.upper() in item['original_title']):
-            item['genres'] = get_genres(item['id'])
+            item['genres'] = get_genres_of_film(item['id'])
             return item
     elif item['media_type'] == 'person':
         if query.upper() in item['name'].upper():
-            if item['known_for'][0]['media_type'] != 'tv':
-                person = {
-                    'id': item['id'],
-                    'name': item['name'],
-                    'known_for': item['known_for'][0],
-                    'popularity': item['popularity']
-                }
-                return person
+            if item['known_for']:
+                if item['known_for'][0]['media_type'] != 'tv':
+                    person = {
+                        'id': item['id'],
+                        'name': item['name'],
+                        'known_for': item['known_for'][0],
+                        'popularity': item['popularity']
+                    }
+                    return person
 
 
 def get_review(title, year):
@@ -116,12 +117,11 @@ def get_nb_credits(id):
 
 
 def get_film_details(id):
-    print(movie_api_key, 'woo')
     payload = {'api_key': movie_api_key}
     response = requests.get(
         f'https://api.themoviedb.org/3/movie/{id}', params=payload).json()
-    response['genres'] = ",".join([genre['name']
-                                   for genre in response['genres']])
+    response['genres'] = " | ".join([genre['name']
+                                     for genre in response['genres']])
     return response
 
 
@@ -155,7 +155,7 @@ def get_film_for_create(id):
     payload = {'api_key': movie_api_key}
     response = requests.get(
         f'https://api.themoviedb.org/3/movie/{id}', params=payload).json()
-    genres = get_genres(id)
+    genres = get_genres_of_film(id)
     film_object = {
         'title':  response.get('title', None),
         'original_language': response.get('original_language', None),
@@ -173,7 +173,7 @@ def get_film_for_create(id):
     return film_object
 
 
-def get_genres(id):
+def get_genres_of_film(id):
     payload = {'api_key': movie_api_key}
     genres = ""
     details = requests.get(
@@ -182,3 +182,44 @@ def get_genres(id):
     for genre in genre_results:
         genres += genre['name'] + ", "
     return genres[:-2]
+
+
+def get_genres():
+    payload = {'api_key': movie_api_key}
+    details = requests.get(
+        f'https://api.themoviedb.org/3/genre/movie/list', params=payload)
+    genres = details.json()['genres']
+    return genres
+
+
+def get_popular():
+    payload = {'api_key': movie_api_key}
+    response = requests.get(
+        f'https://api.themoviedb.org/3/movie/popular', params=payload).json()['results']
+    genres = get_genres()
+    for item in response:
+        item['genres'] = ", ".join([genre['name']
+                                    for genre in genres if genre['id'] in item['genre_ids']])
+    return response
+
+
+def get_top_rated():
+    payload = {'api_key': movie_api_key}
+    response = requests.get(
+        f'https://api.themoviedb.org/3/movie/top_rated', params=payload).json()['results']
+    genres = get_genres()
+    for item in response:
+        item['genres'] = ", ".join([genre['name']
+                                    for genre in genres if genre['id'] in item['genre_ids']])
+    return response
+
+
+def get_upcoming_films():
+    payload = {'api_key': movie_api_key}
+    response = requests.get(
+        f'https://api.themoviedb.org/3/movie/upcoming', params=payload).json()['results']
+    genres = get_genres()
+    for item in response:
+        item['genres'] = ", ".join([genre['name']
+                                    for genre in genres if genre['id'] in item['genre_ids']])
+    return response

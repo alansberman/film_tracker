@@ -18,7 +18,9 @@
     </div>
     <div class="col"></div>
   </div>
-  {% endif %} {% if films %}
+  {% endif %}
+  <!--  -->
+  {% if films %}
   <div class="row">
     <div class="col"></div>
     <div class="col">
@@ -45,7 +47,7 @@
           {% if row %}
           <tr>
             <td>
-              <a href="{% url 'view' row.id %}">{{ row.title }}</a>
+              <a href="{% url 'films:view' row.id %}">{{ row.title }}</a>
             </td>
             <td>{{ row.genres }}</td>
             <td>{{ row.vote_average }}</td>
@@ -55,20 +57,22 @@
                 class="form-inline"
                 method="GET"
                 style="float: left; padding-right: 5px"
-                action="{% url 'add' row.id %}"
+                action="{% url 'films:add' row.id %}"
               >
                 <button
                   type="submit"
                   class="btn btn-success"
                   method="GET"
-                  action="{% url 'add' row.id %}"
+                  action="{% url 'films:add' row.id %}"
                 >
                   Add
                 </button>
               </form>
 
               <button type="button" class="btn btn-info">
-                <a href="{% url 'wishlist-movie' row.id %}" style="color: white"
+                <a
+                  href="{% url 'films:wishlist-film' row.id %}"
+                  style="color: white"
                   >Wishlist</a
                 >
               </button>
@@ -79,10 +83,16 @@
           {% endfor %}
         </tbody>
       </table>
+      {% block content %}
+      <!---->
+      {% include "./pagination.html" with page=films query=query %}
+      <!---->
+      {% endblock %}
     </div>
   </div>
   <div class="row">
     <div class="col">
+      {% if people %}
       <table class="table table-striped">
         <thead class="thead-dark">
           <tr>
@@ -98,11 +108,11 @@
           {% if row %}
           <tr>
             <td>
-              <a href="/people/{{row.id}}/view">{{ row.name }}</a>
+              <a href="{% url 'people:view' row.id %}">{{ row.name }}</a>
             </td>
             <td>{{ row.popularity }}</td>
             <td>
-              <a href="{% url 'view' row.known_for.id %}"
+              <a href="{% url 'films:view' row.known_for.id %}"
                 >{{ row.known_for.title }}</a
               >
             </td>
@@ -113,6 +123,7 @@
           {% endfor %}
         </tbody>
       </table>
+      {% endif %}
     </div>
   </div>
   {% endif %}
