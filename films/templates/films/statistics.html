@@ -1,0 +1,241 @@
+{% include 'films/main.html' %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col"></div>
+    <div class="col text-center">
+      <br />
+      <h2>Statistics</h2>
+    </div>
+    <div class="col"></div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <br />
+    </div>
+  </div>
+
+  <div class="card shadow">
+    <div id="text">
+      <div class="row">
+        <div class="col text-center"></div>
+        <div class="col text-center">
+          <h5>Of {{statistics.num_films}} films</h5>
+        </div>
+        <div class="col text-center"></div>
+      </div>
+      <div class="row">
+        <div class="col text-center">
+          {% load humanize %}
+          <p>
+            <b>{{ statistics.average_crit|floatformat:2|intcomma }}%</b> are New
+            York Times Critic's Picks
+          </p>
+        </div>
+        <div class="col text-center">
+          <p>
+            <b>{{ statistics.average_length.runtime__avg|floatformat:2 }}min</b>
+            is the average length
+          </p>
+        </div>
+        <div class="col text-center">
+          <p>
+            <!---->
+            <b>
+              {{ statistics.average_rating.vote_average__avg|floatformat:2 }}
+            </b>
+            <!---->
+            is the average rating
+          </p>
+        </div>
+      </div>
+
+      <div class="row">
+        {% autoescape off %}
+        <div class="col text-center">{{ statistics.headline }}</div>
+        {% endautoescape %}
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <hr />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col text-center">
+          <h5>My Top Genres</h5>
+          <h6>with average user rating</h6>
+          {% for key,value in statistics.genres.items %}
+          <span
+            >{{ key }} : {% widthratio value.0 1 100 %}%
+            ({{value.1.vote_average__avg|floatformat:2}}) <br
+          /></span>
+          {% endfor %}
+        </div>
+
+        <div class="col text-center">
+          <h5>My Top Keywords</h5>
+          {% for key, value in statistics.keywords.items %}
+          <span>{{ key }}<br /></span>
+          {% endfor %}
+        </div>
+
+        <div class="col text-center">
+          <h5>My Most Recommended</h5>
+          {% for key, value in statistics.most_recommended.items %}
+          <span
+            ><a href="{% url 'films:view' value.0 %}">{{ key }}</a> <br
+          /></span>
+          {% endfor %}
+        </div>
+
+        <div class="col text-center">
+          <h5>My Top Years</h5>
+          {% for key, value in statistics.year_percentages.items %}
+          <span>{{ key }} : {% widthratio value 1 100 %}%<br /></span>
+          {% endfor %}
+        </div>
+
+        <div class="col text-center">
+          <h5>My Decade Breakdown</h5>
+          {% for key, value in statistics.decade_breakdown.items %}
+          <span>{{ key }} : {% widthratio value 1 100 %}%<br /></span>
+          {% endfor %}
+        </div>
+
+        <div class="col text-center">
+          <h5>Runtime Breakdown</h5>
+          <h6>with average user rating</h6>
+          {% for key, value in statistics.runtime_breakdown.items %}
+          <span
+            >{{ key }} : {% widthratio value.0 1 100 %}%
+            <!---->
+            {% if value.1.vote_average__avg %}
+            <!---->
+            ({{value.1.vote_average__avg|floatformat:2}})
+            <!---->
+            {% endif %} <br
+          /></span>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <hr />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col"></div>
+        <div class="col text-center">
+          <h4>My Top People</h4>
+          <h6>with % of my movies</h6>
+        </div>
+        <div class="col"></div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <h5>Directors</h5>
+          {% for key, value in statistics.nb_credits.directors.items %}
+          <!--  -->
+          {% for k, v in value.items %}
+          <span>
+            <a href="{% url 'people:view' k %}">{{ key }}</a>
+            : {% widthratio v 1 100 %}% <br
+          /></span>
+          {% endfor %}
+          <!--  -->
+          {% endfor %}
+        </div>
+        <div class="col">
+          <h5>Producers</h5>
+          {% for key, value in statistics.nb_credits.producers.items %}
+          <!--  -->
+          {% for k, v in value.items %}
+          <span>
+            <a href="{% url 'people:view' k %}">{{ key }}</a>
+            : {% widthratio v 1 100 %}% <br
+          /></span>
+          {% endfor %}
+          <!--  -->
+          {% endfor %}
+        </div>
+        <div class="col">
+          <h5>Editors</h5>
+          {% for key, value in statistics.nb_credits.editors.items %}
+          <!--  -->
+          {% for k, v in value.items %}
+          <span>
+            <a href="{% url 'people:view' k %}">{{ key }}</a>
+            : {% widthratio v 1 100 %}% <br
+          /></span>
+          {% endfor %}
+          <!--  -->
+          {% endfor %}
+        </div>
+        <div class="col">
+          <h5>Screenwriters</h5>
+          {% for key, value in statistics.nb_credits.screenwriters.items %}
+          <!--  -->
+          {% for k, v in value.items %}
+          <span>
+            <a href="{% url 'people:view' k %}">{{ key }}</a>
+            : {% widthratio v 1 100 %}% <br
+          /></span>
+          {% endfor %}
+          <!--  -->
+          {% endfor %}
+        </div>
+        <div class="col">
+          <h5>Directors of Photography</h5>
+          {% for key, value in statistics.nb_credits.photographers.items %}
+          <!--  -->
+          {% for k, v in value.items %}
+          <span>
+            <a href="{% url 'people:view' k %}">{{ key }}</a>
+            : {% widthratio v 1 100 %}% <br
+          /></span>
+          {% endfor %}
+          <!--  -->
+          {% endfor %}
+        </div>
+        <div class="col">
+          <h5>Composers</h5>
+          {% for key, value in statistics.nb_credits.composers.items %}
+          <!--  -->
+          {% for k, v in value.items %}
+          <span>
+            <a href="{% url 'people:view' k %}">{{ key }}</a>
+            : {% widthratio v 1 100 %}% <br
+          /></span>
+          {% endfor %}
+          <!--  -->
+          {% endfor %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <hr />
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <h5>Actors</h5>
+          {% for key, value in statistics.cast.items %}
+          <!--  -->
+          {% for k, v in value.items %}
+          <span>
+            <a href="{% url 'people:view' k %}">{{ key }}</a>
+            : {% widthratio v 1 100 %}% <br
+          /></span>
+          {% endfor %}
+          <!--  -->
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

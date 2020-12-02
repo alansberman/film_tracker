@@ -41,7 +41,7 @@
       <div class="card text-center">
         <div class="card-header">Directed by</div>
         <div class="card-body">
-          {% for director in credits.director %}
+          {% for director in credits.directors %}
           <h5 class="card-title">
             <a href="{% url 'people:view' director.id %}"
               >{{ director.name }}</a
@@ -65,12 +65,61 @@
     <div id="text">
       <div class="row">
         <div class="col">
+          <h5>Where To Watch (GB)</h5>
+          {% if where.watch %}
+          <h6>
+            Free to subscribers: {% for option in where.watch %}
+            <!--  -->
+            {% for key, value in option.items %}
+            <span>
+              <img src="{{value}}" style="width: 50px; height: 50px" />
+            </span>
+            {% endfor %}
+            <!---->
+            {% endfor %}
+            <!---->
+          </h6>
+          {% endif %}
+          <!---->
+          {% if where.rent %}
+          <h6>
+            Rent: {% for option in where.rent %}
+            <!--  -->
+            {% for key, value in option.items %}
+            <span>
+              <img src="{{value}}" style="width: 50px; height: 50px" />
+            </span>
+            {% endfor %}
+            <!---->
+            {% endfor %}
+            <!---->
+          </h6>
+          {% endif %}
+          <!---->
+          {% if where.buy %}
+          <h6>
+            Buy: {% for option in where.buy %}
+            <!--  -->
+            {% for key, value in option.items %}
+            <span>
+              <img src="{{value}}" style="width: 50px; height: 50px" />
+            </span>
+            {% endfor %}
+            <!---->
+            {% endfor %}
+            <!---->
+          </h6>
+          {% endif %}
+          <hr />
           <h5>Overview</h5>
           <p>{{ film.overview }}</p>
           <hr />
+          {% if film.keywords %}
           <h5>Keywords</h5>
           <p>{{ film.keywords }}</p>
           <hr />
+          {% endif %}
+          <!---->
           {% if review %}
           <h5>
             <a href="{{review.link.url}}">New York Times Review</a>
@@ -93,7 +142,11 @@
           {% if cast %}
           <h5>Cast</h5>
           {% for person in cast %}
-          <a href="{% url 'people:view' person.id %}">{{ person.name }}</a> |
+          <span>
+            <a href="{% url 'people:view' person.id %}">{{ person.name }}</a>
+            {% if person.role %} as {{person.role}} {% endif %}
+            <br />
+          </span>
           <!---->
           {% endfor %}
           <hr />
@@ -112,15 +165,26 @@
           {% endif %}
           <h5>Runtime: {{film.runtime}}min</h5>
           <hr />
+          {% if credits.producers %}
           <h5>Producers</h5>
           {% for producer in credits.producers %}
           <a href="{% url 'people:view' producer.id %}">{{ producer.name }}</a>
           {% endfor %}
           <hr />
-          {% if scredits.screenplay %}
+          {% endif %}
+          <!---->
+          {% if credits.editors %}
+          <h5>Editors</h5>
+          {% for editor in credits.editors %}
+          <a href="{% url 'people:view' editor.id %}">{{ editor.name }}</a>
+          {% endfor %}
+          <hr />
+          {% endif %}
+          <!---->
+          {% if credits.screenwriters %}
           <h5>Screenplay by</h5>
           <div>
-            {% for writer in credits.screenplay %}
+            {% for writer in credits.screenwriters %}
             <a href="{% url 'people:view' writer.id %}">{{ writer.name }}</a>
             {% endfor %}
           </div>
@@ -134,12 +198,25 @@
           {% endfor %}
           <hr />
           {% endif %}
+          <!---->
+          {% if credits.photographers %}
           <h5>Director of Photography</h5>
           <div>
-            {% for person in credits.director_of_photography %}
+            {% for person in credits.photographers %}
+            <a href="{% url 'people:view' person.id %}">{{ person.name }}</a>
+            {% endfor %}
+            <hr />
+          </div>
+          {% endif %}
+          <!---->
+          {% if credits.composers %}
+          <h5>Original Music Composer</h5>
+          <div>
+            {% for person in credits.composers %}
             <a href="{% url 'people:view' person.id %}">{{ person.name }}</a>
             {% endfor %}
           </div>
+          {% endif %}
         </div>
         {% if poster %}
         <div class="col text-center">

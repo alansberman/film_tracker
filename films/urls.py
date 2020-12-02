@@ -8,6 +8,8 @@ urlpatterns = [
     path('search', views.search, name='search'),
     path('popular', views.popular, name='popular'),
     path('upcoming', views.upcoming, name='upcoming'),
+    path('festivals', views.festivals, name='festivals'),
+    path('statistics', views.statistics, name='statistics'),
     path('top', views.top, name='top'),
     path('<int:movie_id>/add', views.add_movie, name='add'),
     path('<int:movie_id>/wishlist',
@@ -16,4 +18,5 @@ urlpatterns = [
     path('<int:id>/like', views.like, name='like'),
     path('<int:id>/dislike', views.dislike, name='dislike'),
     path('<int:id>/view', views.get_film, name='view'),
+
 ]

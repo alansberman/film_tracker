@@ -1,0 +1,27 @@
+{% include 'films/main.html' %}
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col">
+      <br />
+    </div>
+  </div>
+  <div class="card shadow">
+    <div id="text">
+      <div class="row">
+        <div class="col">
+          <div class="card text-center">
+            <div class="card-header">Cannes</div>
+            <div class="card-body">
+              <h5 class="card-title">
+                {% load static %}
+                <!-- https://www.cleanpng.com/png-2-15-cannes-film-festival-logo-2-14-cannes-film-fe-6269453/ -->
+                <img src="{% static 'cannes.png' %}" alt="Cannes" />
+              </h5>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
