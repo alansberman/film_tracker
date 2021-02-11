@@ -18,5 +18,12 @@ urlpatterns = [
     path('<int:id>/like', views.like, name='like'),
     path('<int:id>/dislike', views.dislike, name='dislike'),
     path('<int:id>/view', views.get_film, name='view'),
+    path('chart', views.years_chart, name='years-chart'),
+    path('runtime-chart', views.runtime_chart, name='runtime-chart'),
+    path('decades-chart', views.decades_chart, name='decades-chart'),
+    path('ratings-chart', views.ratings_chart, name='ratings-chart'),
+    path('genres', views.genres, name='genres'),
+    path('discover', views.discover, name='discover'),
+
 
 ]

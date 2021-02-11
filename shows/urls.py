@@ -15,4 +15,5 @@ urlpatterns = [
     path('<int:show_id>/wishlist',
          views.wishlist_show, name='wishlist-show'),
     path('wishlist', views.wishlist, name='wishlist-index'),
+    path('statistics', views.statistics, name='statistics')
 ]

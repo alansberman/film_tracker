@@ -32,6 +32,15 @@
             York Times Critic's Picks
           </p>
         </div>
+        {% if statistics.liked_percentage %}
+        <div class="col text-center">
+          {% load humanize %}
+          <p>
+            I have liked
+            <b>{{ statistics.liked_percentage|floatformat:2|intcomma }}%</b>
+          </p>
+        </div>
+        {% endif %}
         <div class="col text-center">
           <p>
             <b>{{ statistics.average_length.runtime__avg|floatformat:2 }}min</b>
@@ -46,6 +55,14 @@
             </b>
             <!---->
             is the average rating
+            <br />
+            {% if statistics.average_score.score__avg %}
+            <!---->
+            <b> {{ statistics.average_score.score__avg|floatformat:2 }} </b>
+            <!---->
+            is my average score
+            <!---->
+            {% endif %}
           </p>
         </div>
       </div>
@@ -54,6 +71,7 @@
         {% autoescape off %}
         <div class="col text-center">{{ statistics.headline }}</div>
         {% endautoescape %}
+        <br />
       </div>
 
       <div class="row">
@@ -64,20 +82,29 @@
 
       <div class="row">
         <div class="col text-center">
-          <h5>My Top Genres</h5>
-          <h6>with average user rating</h6>
+          <h5>
+            My Top Genres <br />
+            {% if wishlist %}
+            <small>with average user rating</small>
+            {% else %}
+            <small>with my average score</small>
+            {% endif %}
+          </h5>
           {% for key,value in statistics.genres.items %}
           <span
             >{{ key }} : {% widthratio value.0 1 100 %}%
-            ({{value.1.vote_average__avg|floatformat:2}}) <br
+            <!---->
+            {% if wishlist %}
+            <!---->
+            ({{value.1.vote_average__avg|floatformat:2}})
+            <!---->
+            {%else %}
+            <!---->
+            ({{value.2.score__avg|floatformat:2}})
+            <!---->
+            {% endif %}
+            <br
           /></span>
-          {% endfor %}
-        </div>
-
-        <div class="col text-center">
-          <h5>My Top Keywords</h5>
-          {% for key, value in statistics.keywords.items %}
-          <span>{{ key }}<br /></span>
           {% endfor %}
         </div>
 
@@ -91,32 +118,9 @@
         </div>
 
         <div class="col text-center">
-          <h5>My Top Years</h5>
-          {% for key, value in statistics.year_percentages.items %}
-          <span>{{ key }} : {% widthratio value 1 100 %}%<br /></span>
-          {% endfor %}
-        </div>
-
-        <div class="col text-center">
-          <h5>My Decade Breakdown</h5>
-          {% for key, value in statistics.decade_breakdown.items %}
-          <span>{{ key }} : {% widthratio value 1 100 %}%<br /></span>
-          {% endfor %}
-        </div>
-
-        <div class="col text-center">
-          <h5>Runtime Breakdown</h5>
-          <h6>with average user rating</h6>
-          {% for key, value in statistics.runtime_breakdown.items %}
-          <span
-            >{{ key }} : {% widthratio value.0 1 100 %}%
-            <!---->
-            {% if value.1.vote_average__avg %}
-            <!---->
-            ({{value.1.vote_average__avg|floatformat:2}})
-            <!---->
-            {% endif %} <br
-          /></span>
+          <h5>My Top Keywords</h5>
+          {% for key, value in statistics.keywords.items %}
+          <span>{{ key }}<br /></span>
           {% endfor %}
         </div>
       </div>
@@ -128,10 +132,34 @@
       </div>
 
       <div class="row">
+        <div class="col">
+          {% include 'films/year_chart.html' with params=filters %}
+        </div>
+        <div class="col">
+          {% include 'films/decades_chart.html' with params=filters %}
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          {% include 'films/runtime_chart.html' with params=filters %}
+        </div>
+        <div class="col">
+          {% include 'films/ratings_chart.html' with params=filters %}
+        </div>
+      </div>
+
+      <div class="row">
         <div class="col"></div>
         <div class="col text-center">
           <h4>My Top People</h4>
-          <h6>with % of my movies</h6>
+          <h6>
+            with % of my movies
+            <!---->
+            {% if not wishlist %} and my average score for their movies
+            <!---->
+            {% endif%}
+          </h6>
         </div>
         <div class="col"></div>
       </div>
@@ -143,8 +171,15 @@
           {% for k, v in value.items %}
           <span>
             <a href="{% url 'people:view' k %}">{{ key }}</a>
-            : {% widthratio v 1 100 %}% <br
-          /></span>
+            : {% widthratio v.0 1 100 %}%
+            <!---->
+            {% if not wishlist %}
+            <!---->
+            ({{v.1|floatformat:2}})
+            <!---->
+            {% endif %}
+            <br />
+          </span>
           {% endfor %}
           <!--  -->
           {% endfor %}
@@ -156,7 +191,14 @@
           {% for k, v in value.items %}
           <span>
             <a href="{% url 'people:view' k %}">{{ key }}</a>
-            : {% widthratio v 1 100 %}% <br
+            : {% widthratio v.0 1 100 %}%
+            <!---->
+            {% if not wishlist %}
+            <!---->
+            ({{v.1|floatformat:2}})
+            <!---->
+            {% endif %}
+            <br
           /></span>
           {% endfor %}
           <!--  -->
@@ -169,7 +211,14 @@
           {% for k, v in value.items %}
           <span>
             <a href="{% url 'people:view' k %}">{{ key }}</a>
-            : {% widthratio v 1 100 %}% <br
+            : {% widthratio v.0 1 100 %}%
+            <!---->
+            {% if not wishlist %}
+            <!---->
+            ({{v.1|floatformat:2}})
+            <!---->
+            {% endif %}
+            <br
           /></span>
           {% endfor %}
           <!--  -->
@@ -182,7 +231,14 @@
           {% for k, v in value.items %}
           <span>
             <a href="{% url 'people:view' k %}">{{ key }}</a>
-            : {% widthratio v 1 100 %}% <br
+            : {% widthratio v.0 1 100 %}%
+            <!---->
+            {% if not wishlist %}
+            <!---->
+            ({{v.1|floatformat:2}})
+            <!---->
+            {% endif %}
+            <br
           /></span>
           {% endfor %}
           <!--  -->
@@ -195,20 +251,35 @@
           {% for k, v in value.items %}
           <span>
             <a href="{% url 'people:view' k %}">{{ key }}</a>
-            : {% widthratio v 1 100 %}% <br
+            : {% widthratio v.0 1 100 %}%
+            <!---->
+            {% if not wishlist %}
+            <!---->
+            ({{v.1|floatformat:2}})
+            <!---->
+            {% endif %}
+            <br
           /></span>
           {% endfor %}
           <!--  -->
           {% endfor %}
         </div>
         <div class="col">
+          {{ wishlist}}
           <h5>Composers</h5>
           {% for key, value in statistics.nb_credits.composers.items %}
           <!--  -->
           {% for k, v in value.items %}
           <span>
             <a href="{% url 'people:view' k %}">{{ key }}</a>
-            : {% widthratio v 1 100 %}% <br
+            : {% widthratio v.0 1 100 %}%
+            <!---->
+            {% if not wishlist %}
+            <!---->
+            ({{v.1|floatformat:2}})
+            <!---->
+            {% endif %}
+            <br
           /></span>
           {% endfor %}
           <!--  -->
@@ -229,7 +300,7 @@
           {% for k, v in value.items %}
           <span>
             <a href="{% url 'people:view' k %}">{{ key }}</a>
-            : {% widthratio v 1 100 %}% <br
+            : {% widthratio v.0 1 100 %}% ({{v.1|floatformat:2}}) <br
           /></span>
           {% endfor %}
           <!--  -->

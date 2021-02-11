@@ -68,17 +68,19 @@
               {% endfor %}
             </tbody>
           </table>
-          <!-- {% if poster %}
-        <div class="col text-center">
-          <br />
-          <img
-            src="{{poster}}"
-            style="width: 500px; height: 550px"
-            alt="poster"
-          />
+        </div>
+        <!-- {% if season.poster_path %}
+        <div class="col">
+          <div class="col text-center">
+            <br />
+            <img
+              src="https://image.tmdb.org/t/p/original{{season.poster_path}}"
+              style="width: 500px; height: 550px"
+              alt="poster"
+            />
+          </div>
         </div>
         {% endif %} -->
-        </div>
       </div>
     </div>
   </div>

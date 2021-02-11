@@ -15,6 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from rest_framework.authtoken import views
+from django.contrib.auth.views import LoginView
+from rest_framework_jwt.views import obtain_jwt_token, refresh_jwt_token
+from django.contrib.auth import authenticate, login
 
 urlpatterns = [
     path('', include('homepage.urls')),
@@ -22,5 +26,7 @@ urlpatterns = [
     path('people/', include(('people.urls', 'people'), namespace='people')),
     path('shows/', include(('shows.urls', 'shows'), namespace='shows')),
     path('admin/', admin.site.urls),
+    path('accounts/', include('django.contrib.auth.urls')),
+    path('auth/', include(('auth.urls', 'auth'), namespace='auth')),
 
 ]

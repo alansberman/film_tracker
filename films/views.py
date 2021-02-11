@@ -5,15 +5,32 @@ import json
 from datetime import date
 import timeit
 import functools
+import collections
 # Create your views here.
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from imdb import IMDb
-import re
-from .models import Film, Genre, Keyword, CrewCredit, ActingCredit
+from django.db.models.functions import ExtractYear
+from .models import Film, Genre, Keyword, CrewCredit, ActingCredit, Token
 from .forms import FilmSearchForm, FilmForm
+from django.views.decorators.csrf import csrf_exempt
+
 from . import stats
+import time
+from django.db.models.functions import Trunc
+from plotly.offline import plot
+from plotly.graph_objs import Scatter
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.db.models import Avg, Max, Q, Count, FloatField, F
+from django.db.models import Avg, Max, Q, Count, FloatField, F, DateField
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+from datetime import datetime as dt
+from django.forms.models import model_to_dict
+from django.utils import timezone
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
+
 # create an instance of the IMDb class
 
 # https://api.themoviedb.org/3/search/movie
@@ -23,22 +40,285 @@ import os
 movie_api_key = os.getenv("MOVIE_DB_KEY")
 
 
-def index(request):
+def years_chart(request, *filters):
+    f = request.GET
+    filters = {}
+    current_user = request.user
+    # print(current_user)
+    # print(current_user.id)
+    for key, value in f.items():
+        if key == 'genre__in':
+            value = value.split("&")
+            value = [eval(x) for x in value]
+            filters[key] = value
+        if value == 'True':
+            filters[key] = eval(value)
+        else:
+            filters[key] = value
+    wishlist = True if f.get('wishlisted') == 'True' else False
+    if 'genre__in' in filters.keys():
+        # pylint: disable=no-member
+        film_ids = Genre.objects.filter(
+            movie_db_id__in=filters['genre__in']).values('film')
+        del filters['genre__in']
+        filters['pk__in'] = film_ids
+
+    if current_user:
+        filters['user'] = current_user
+
+    labels = []
+    data = {
+        'one': [],
+        'two': []
+    }
+
     # pylint: disable=no-member
-    films = Film.objects.filter(added=True).order_by('-score')
-    film_paginator = Paginator(films, 10)
-    page = request.GET.get('page')
-    try:
-        films = film_paginator.page(page)
-    except PageNotAnInteger:
-        # If page is not an integer deliver the first page
-        films = film_paginator.page(1)
-    except EmptyPage:
-        # If page is out of range deliver last page of results
-        films = film_paginator.page(film_paginator.num_pages)
-    if not page:
-        films = film_paginator.page(1)
-    return render(request, 'films/index.html', {'films': films})
+    films = Film.objects.filter(**filters).annotate(
+        year=ExtractYear('release_date')).values('year').annotate(count=Count('year')).annotate(avg_score=Avg('score')) if filters else Film.objects.all().annotate(
+        year=ExtractYear('release_date')).values('year').annotate(count=Count('year'))
+    for entry in films:
+        labels.append(entry['year'])
+        data.get('one').append(entry['count'])
+        if filters:
+            data.get('two').append(entry['avg_score'])
+    max_count = max(data.get('one'))
+    return JsonResponse(data={
+        'labels': labels,
+        'data': data,
+        'max': max_count
+    })
+
+
+def decades_chart(request, *filters):
+    f = request.GET
+    filters = {}
+    current_user = request.user
+    # print(current_user)
+    # print(current_user.id)
+    for key, value in f.items():
+        if key == 'genre__in':
+            value = value.split("&")
+            value = [eval(x) for x in value]
+            filters[key] = value
+        if value == 'True':
+            filters[key] = eval(value)
+        else:
+            filters[key] = value
+    wishlist = True if f.get('wishlisted') == 'True' else False
+
+    if 'genre__in' in filters.keys():
+        # pylint: disable=no-member
+        film_ids = Genre.objects.filter(
+            movie_db_id__in=filters['genre__in']).values('film')
+        del filters['genre__in']
+        filters['pk__in'] = film_ids
+
+    if current_user:
+        filters['user'] = current_user
+
+    labels = []
+    data = {
+        'one': [],
+        'two': []
+    }
+
+    # pylint: disable=no-member
+    films = Film.objects.filter(**filters).annotate(
+        year=ExtractYear('release_date')) if filters else Film.objects.all().annotate(
+        year=ExtractYear('release_date'))
+
+    breakdown = {
+        '1930s': (films.filter(year__gte=1930, year__lte=1939).count(), (films.filter(year__gte=1930, year__lte=1939).values_list(
+            'score').aggregate(Avg('score'))['score__avg'])),
+        '1940s': (films.filter(year__gte=1940, year__lte=1949).count(), (films.filter(year__gte=1940, year__lte=1949).values_list(
+            'score').aggregate(Avg('score'))['score__avg'])),
+        '1950s': (films.filter(year__gte=1950, year__lte=1959).count(), (films.filter(year__gte=1950, year__lte=1959).values_list(
+            'score').aggregate(Avg('score'))['score__avg'])),
+        '1960s': (films.filter(year__gte=1960, year__lte=1969).count(), (films.filter(year__gte=1960, year__lte=1969).values_list(
+            'score').aggregate(Avg('score'))['score__avg'])),
+        '1970s': (films.filter(year__gte=1970, year__lte=1979).count(), (films.filter(year__gte=1970, year__lte=1979).values_list(
+            'score').aggregate(Avg('score'))['score__avg'])),
+        '1980s': (films.filter(year__gte=1980, year__lte=1989).count(), (films.filter(year__gte=1980, year__lte=1989).values_list(
+            'score').aggregate(Avg('score'))['score__avg'])),
+        '1990s': (films.filter(year__gte=1990, year__lte=1999).count(), (films.filter(year__gte=1990, year__lte=1999).values_list(
+            'score').aggregate(Avg('score'))['score__avg'])),
+        '2000s': (films.filter(year__gte=2000, year__lte=2009).count(), (films.filter(year__gte=2000, year__lte=2009).values_list(
+            'score').aggregate(Avg('score'))['score__avg'])),
+        '2010s': (films.filter(year__gte=2010, year__lte=2019).count(), (films.filter(year__gte=2010, year__lte=2019).values_list(
+            'score').aggregate(Avg('score'))['score__avg'])),
+    }
+
+    for key, value in breakdown.items():
+        labels.append(key)
+        data['one'].append(value[0])
+        data['two'].append(value[1])
+    max_count = max(data.get('one'))
+
+    return JsonResponse(data={
+        'labels': labels,
+        'data': data,
+        'max': max_count
+    })
+
+
+def runtime_chart(request, *filters):
+    f = request.GET
+    filters = {}
+    current_user = request.user
+    # print(current_user)
+    # print(current_user.id)
+    for key, value in f.items():
+        if key == 'genre__in':
+            value = value.split("&")
+            value = [eval(x) for x in value]
+            filters[key] = value
+        if value == 'True':
+            filters[key] = eval(value)
+        else:
+            filters[key] = value
+    wishlist = True if f.get('wishlisted') == 'True' else False
+
+    if 'genre__in' in filters.keys():
+        # pylint: disable=no-member
+        film_ids = Genre.objects.filter(
+            movie_db_id__in=filters['genre__in']).values('film')
+        del filters['genre__in']
+        filters['pk__in'] = film_ids
+
+    if current_user:
+        filters['user'] = current_user
+
+    labels = []
+    data = {
+        'one': [],
+        'two': []
+    }
+    # pylint: disable=no-member
+    films = Film.objects.filter(**filters).values('runtime').annotate(count=Count('runtime')).annotate(avg_score=Avg(
+        'score')) if filters else Film.objects.all().values('runtime').annotate(count=Count('runtime')).annotate(avg_score=Avg('score'))
+    for entry in films:
+        labels.append(entry['runtime'])
+        data['one'].append(entry['count'])
+        data['two'].append(entry['avg_score'])
+    max_count = max(data.get('one'))
+
+    return JsonResponse(data={
+        'labels': labels,
+        'data': data,
+        'max': max_count
+    })
+
+
+def ratings_chart(request, *filters):
+    f = request.GET
+    filters = {}
+    current_user = request.user
+    # print(current_user)
+    # print(current_user.id)
+    for key, value in f.items():
+        if key == 'genre__in':
+            value = value.split("&")
+            value = [eval(x) for x in value]
+            filters[key] = value
+        if value == 'True':
+            filters[key] = eval(value)
+        else:
+            filters[key] = value
+    wishlist = True if f.get('wishlisted') == 'True' else False
+
+    if 'genre__in' in filters.keys():
+        # pylint: disable=no-member
+        film_ids = Genre.objects.filter(
+            movie_db_id__in=filters['genre__in']).values('film')
+        del filters['genre__in']
+        filters['pk__in'] = film_ids
+
+    if current_user:
+        filters['user'] = current_user
+
+    labels = []
+    data = {
+        'one': [],
+        'two': []
+    }
+    # pylint: disable=no-member
+    # pylint: disable=no-member
+    films = Film.objects.filter(**filters).values('vote_average').annotate(count=Count('vote_average')) if filters else Film.objects.all(
+    ).values('vote_average').annotate(count=Count('vote_average'))
+
+    films_my_score = Film.objects.filter(**filters).values('score').annotate(count_score=Count('score')) if filters else Film.objects.all(
+    ).values('score').annotate(count_score=Count('score'))
+
+    d = {}
+    for entry in films:
+        d[entry['vote_average']] = (entry['count'], 0)
+    for entry in films_my_score:
+        if d.get(entry['score']) is not None:
+            old = d[entry['score']]
+            d[entry['score']] = (old[0], entry['count_score'])
+        else:
+            d[entry['score']] = (0, entry['count_score'])
+    d = {k: v for k, v in d.items() if k is not None}
+    d = collections.OrderedDict(sorted(d.items()))
+    for key, value in d.items():
+        labels.append(key)
+        data['one'].append(value[0])
+        data['two'].append(value[1])
+
+    return JsonResponse(data={
+        'labels': labels,
+        'data': data,
+    })
+
+
+def index(request):
+    # print(request.user)
+    # # permission_classes = (IsAuthenticated,)
+    # # authentication_class = JSONWebTokenAuthentication
+    # print(request.user.is_authenticated)
+
+    # film_helper.bulk_create_films(request)
+
+    # pylint: disable=no-member
+    if not request.user:
+        films = Film.objects.filter(added=True).order_by('-score')
+    else:
+        films = Film.objects.filter(
+            added=True, user=request.user).order_by('-vote_average')
+    films = list(films.values())
+    # film_paginator = Paginator(films, 10)
+    # page = request.GET.get('page')
+    # try:
+    #     films = film_paginator.page(page)
+    # except PageNotAnInteger:
+    #     # If page is not an integer deliver the first page
+    #     films = film_paginator.page(1)
+    # except EmptyPage:
+    #     # If page is out of range deliver last page of results
+    #     films = film_paginator.page(film_paginator.num_pages)
+    # if not page:
+    #     films = film_paginator.page(1)
+
+    return JsonResponse(data={
+        'films': films
+    })
+
+
+def discover(request):
+    f = request.GET
+    # print(current_user)
+    # print(current_user.id)
+    filters = {}
+    for key, value in f.items():
+        if key == 'genre__in':
+            value = value.split("&")
+            value = ",".join([eval(x) for x in value])
+            filters[key] = value
+        else:
+            filters[key] = value
+    filters['sort_by'] = 'vote_count.desc'
+    films = film_helper.discover(**filters)
+    return JsonResponse(data={'films': films})
 
 
 def get_film(request, id):
@@ -61,71 +341,34 @@ def get_film(request, id):
     year = film['release_date'].split("-")[0]
     review = film_helper.get_review(film['title'], year)
     poster = film_helper.get_poster(id)
-    return render(request, f'films/film.html', {'film': film, 'credits': credits, 'cast': cast[:5],
-                                                'wishlisted': wishlisted, 'watched': watched, 'review': review, 'poster': poster, 'where': where_to_watch})
+
+    # return render(request, f'films/film.html', {'film': film, 'credits': credits, 'cast': cast[:5],
+    #                                             'wishlisted': wishlisted, 'watched': watched, 'review': review, 'poster': poster, 'where': where_to_watch})
+    return JsonResponse(data={'film': film, 'credits': credits, 'cast': cast[:5],
+                              'wishlisted': wishlisted, 'watched': watched, 'review': review, 'poster': poster, 'where': where_to_watch})
 
 
 def search_results(request):
     return render(request, 'films/search.html', {})
 
 
+@csrf_exempt
 def add_movie(request, movie_id):
     # if this is a POST request we need to process the form data
     if request.method == 'POST':
         # create a form instance and populate it with data from the request:
-        form = FilmForm(request.POST)
-        # check whether it's valid:
-        if form.is_valid():
-            # process the data in form.cleaned_data as required
-            # ...
-            # redirect to a new URL:
-            score = form.cleaned_data['score']
-            comments = form.cleaned_data['comments']
-            date_watched = form.cleaned_data['date_watched']
-            film, genres, keywords, nb_credits, cast = film_helper.get_film_for_create(
-                movie_id)
+        data = json.loads(request.body)
+        date_watched = data.get('date_watched')
+        score = eval(data.get('score'))
+        liked = data.get('liked')
+        comments = data.get('comments')
+        film, genres, keywords, nb_credits, cast = film_helper.get_film_for_create(
+            movie_id)
+        film_helper.save_film(film, genres, keywords, nb_credits, cast, wishlisted=False,
+                              date_watched=date_watched, score=score, added=True, comments=comments, liked=liked, user=request.user)
+        return JsonResponse(data={'response': 'Film successfully added'})
 
-            added_film = Film(title=film['title'],
-                              original_language=film['original_language'],
-                              overview=film['overview'],
-                              popularity=film['popularity'],
-                              #   genres=film['genres'],
-                              runtime=film['runtime'],
-                              budget=film['budget'],
-                              revenue=film['revenue'],
-                              vote_average=film['vote_average'],
-                              added=film['added'],
-                              score=score,
-                              comments=comments,
-                              date_watched=date_watched,
-                              release_date=film['release_date'],
-                              movie_db_id=film['movie_db_id'],
-                              #   genre_ids=film['genre_ids'],
-                              poster=film['poster'],
-                              wishlisted=film['wishlisted'],
-                              liked=None,
-                              #   producer_ids=film['producer_ids'],
-                              #   producers=film['producers'],
-                              #   cast=film['cast'],
-                              #   cast_ids=film['cast_ids'],
-                              review=film['review'],
-                              review_url=film['review_url'],
-                              #   keywords=film['keywords'],
-                              #   keyword_ids=film['keyword_ids'],
-                              critics_pick=film['critics_pick'],
-                              #   director_ids=film['director_ids'],
-                              #   director=film['director'],
-                              #   assoc_producer_ids=film['assoc_producer_ids'],
-                              #   assoc_producers=film['assoc_producer'],
-                              #   screenplay_ids=film['screenplay_ids'],
-                              #   screenplay=film['screenplay'],
-                              #   story_ids=film['story_ids'],
-                              #   story=film['story'],
-                              #   director_of_photography_ids=film['director_of_photography_ids'],
-                              #   director_of_photography=film['director_of_photography']
-                              )
-            added_film.save()
-            return HttpResponseRedirect('/films')
+        #     return HttpResponseRedirect('/films')
 
     # if a GET (or any other method) we'll create a blank form
     else:
@@ -135,72 +378,21 @@ def add_movie(request, movie_id):
 
 
 def wishlist_movie(request, movie_id):
-
+    if not request.user:
+        return JsonResponse(data={'response': 'No user given/found'})
     film, genres, keywords, nb_credits, cast = film_helper.get_film_for_create(
         movie_id)
     # pylint: disable=no-member
-    film_found = Film.objects.filter(movie_db_id=film['movie_db_id']).exists()
+    film_found = Film.objects.filter(
+        movie_db_id=film['movie_db_id'], user=request.user).exists()
     if film_found:
-        return HttpResponseRedirect('/films/wishlist')
-
-    wishlisted_film = Film(title=film['title'],
-                           original_language=film['original_language'],
-                           overview=film['overview'],
-                           popularity=film['popularity'],
-                           runtime=film['runtime'],
-                           budget=film['budget'],
-                           revenue=film['revenue'],
-                           vote_average=film['vote_average'],
-                           added=False,
-                           score=None,
-                           comments=None,
-                           date_watched=date.today(),
-                           release_date=film['release_date'],
-                           movie_db_id=film['movie_db_id'],
-                           poster=film['poster'],
-                           wishlisted=True,
-                           liked=None,
-                           review=film['review'],
-                           review_url=film['review_url'],
-                           critics_pick=film['critics_pick'],
-                           )
-    wishlisted_film.save()
-
-    film_helper.store_recommendations(film['movie_db_id'])
-
-    genre_objects = [Genre(movie_db_id=item['id'], name=item['name'],
-                           film=wishlisted_film) for item in genres]
-    # pylint: disable=no-member
-    Genre.objects.bulk_create(genre_objects)
-    # for item in genres:
-    #     genre = Genre(movie_db_id=item['id'],
-    #                   name=item['name'], film=wishlisted_film)
-    #     genre.save()
-    # for item in keywords:
-    #     keyword = Keyword(movie_db_id=item['id'],
-    #                       name=item['name'], film=wishlisted_film)
-    #     keyword.save()
-    keyword_objects = [Keyword(
-        movie_db_id=item['id'], name=item['name'], film=wishlisted_film) for item in keywords]
-    # pylint: disable=no-member
-    Keyword.objects.bulk_create(keyword_objects)
-    # for item in nb_credits:
-    #     credit = CrewCredit(
-    #         movie_db_id=item['id'], name=item['name'], film=wishlisted_film, job=item['job'], credit_id=item['credit_id'])
-    #     credit.save()
-    credit_objects = [CrewCredit(movie_db_id=item['id'], name=item['name'], film=wishlisted_film,
-                                 job=item['job'], credit_id=item['credit_id']) for item in nb_credits]
-    # pylint: disable=no-member
-    CrewCredit.objects.bulk_create(credit_objects)
-    # for item in cast:
-    #     credit = ActingCredit(
-    #         movie_db_id=item['id'], name=item['name'], film=wishlisted_film, role=item['role'], credit_id=item['credit_id'])
-    #     credit.save()
-    acting_objects = [ActingCredit(movie_db_id=item['id'], name=item['name'], film=wishlisted_film,
-                                   role=item['role'], credit_id=item['credit_id']) for item in cast]
-    # pylint: disable=no-member
-    ActingCredit.objects.bulk_create(acting_objects)
-    return HttpResponseRedirect('/films/wishlist')
+        return JsonResponse(data={'response': 'Film already wishlisted'})
+    try:
+        film_helper.save_film(film, genres, keywords, nb_credits,
+                              cast, wishlisted=True, user=request.user)
+        return JsonResponse(data={'response': 'Film successfully wishlisted'})
+    except:
+        return JsonResponse(data={'response': 'Failed to wishlist'})
 
 
 def wishlist(request):
@@ -249,23 +441,21 @@ def search(request):
         response = requests.get(
             'https://api.themoviedb.org/3/search/multi', params=payload)
         films, people = film_helper.parse_search(response.json(), query)
+        # film_paginator = Paginator(films, 10)
+        # page = request.GET.get('page')
+        # try:
+        #     films = film_paginator.page(page)
+        # except PageNotAnInteger:
+        #     # If page is not an integer deliver the first page
+        #     films = film_paginator.page(1)
+        # except EmptyPage:
+        #     # If page is out of range deliver last page of results
+        #     films = film_paginator.page(film_paginator.num_pages)
+        # if not page:
+        #     films = film_paginator.page(1)
 
-        film_paginator = Paginator(films, 10)
-        page = request.GET.get('page')
-        try:
-            films = film_paginator.page(page)
-        except PageNotAnInteger:
-            # If page is not an integer deliver the first page
-            films = film_paginator.page(1)
-        except EmptyPage:
-            # If page is out of range deliver last page of results
-            films = film_paginator.page(film_paginator.num_pages)
-        if not page:
-            films = film_paginator.page(1)
-
-        context = {'films': films,
-                   'query': payload['query'], 'people': people, 'page': page}
-        return render(request, 'films/search.html', context)
+        return JsonResponse(data={'films': films, 'people': people})
+        # return render(request, 'films/search.html', context)
 
     elif not request.GET.get('page'):
         form = FilmSearchForm()
@@ -282,38 +472,85 @@ def festivals(request):
     return render(request, 'films/festivals.html')
 
 
+def genres(request):
+    genres = film_helper.get_genres()
+    return JsonResponse(data={'genres': genres})
+
+
 def statistics(request):
+    f = request.GET
+    filters = {}
+    # film_helper.bulk_create_films()
+    current_user = request.user
+    # print(current_user)
+    # print(current_user.id)
+    for key, value in f.items():
+        if key == 'genre__in':
+            value = value.split("&")
+            value = [eval(x) for x in value]
+            filters[key] = value
+        if value == 'True':
+            filters[key] = eval(value)
+        else:
+            filters[key] = value
+    wishlist = True if f.get('wishlisted') == 'True' else False
+
+    if current_user:
+        filters['user'] = current_user
+
+    if 'genre__in' in filters.keys():
+        # pylint: disable=no-member
+        film_ids = Genre.objects.filter(
+            movie_db_id__in=filters['genre__in']).values('film')
+        del filters['genre__in']
+        filters['pk__in'] = film_ids
     # pylint: disable=no-member
-    films = Film.objects.filter(wishlisted=True)
-    genres = stats.get_genre_percentages()
-    keywords = stats.get_keyword_percentages()
-    runtime_breakdowns = stats.get_runtime_breakdowns()
-    cast = ActingCredit.objects.order_by().values(
-        'name', 'movie_db_id').annotate(count=Count('id')).order_by('-count')
-    average_rating = stats.get_average_rating()
-    most_recommended = stats.get_most_recommended()
-    nb_credits = stats.get_nb_credit_percentages()
-    cast = stats.get_actor_percentages()
-    decade_breakdown = stats.get_decade_percentages()
-    year_percentages = stats.get_year_percentages()
-    headline = stats.get_headline()
+    films = Film.objects.filter(**filters)
+    if films.count() == 0:
+        return JsonResponse(data={
+            'noFilmsFound': True
+        })
+    genres = stats.get_genre_percentages(**filters)
+    keywords = stats.get_keyword_percentages(**filters)
+    liked_percentage = Film.objects.filter(
+        **filters).filter(liked=True).count() / Film.objects.filter(**filters).count() * 100
+    runtime_breakdowns = list(stats.get_runtime_breakdowns(**filters).values())
+    cast = list(ActingCredit.objects.order_by().values(
+        'name', 'movie_db_id').annotate(count=Count('id')).order_by('-count').values())
+    average_rating = list(stats.get_average_rating(**filters).values())
+    average_score = list(stats.get_my_average_score(**filters).values())
+    most_recommended = stats.get_most_recommended(**filters)
+    nb_credits = stats.get_nb_credit_percentages(**filters)
+    cast = stats.get_actor_percentages(**filters)
+    decade_breakdown = stats.get_decade_percentages(**filters)
+    year_percentages = stats.get_year_percentages(**filters)
+    headline = stats.get_headline(**filters)
+
     statistics = {
         'average_length': films.aggregate(Avg('runtime')),
-        'average_crit': len(Film.objects.filter(critics_pick=True)) / len(Film.objects.all()) * 100,
+        'average_crit': Film.objects.filter(critics_pick=True, **filters).count() / Film.objects.filter(**filters).count() * 100,
         'average_rating': average_rating,
         'genres': genres,
         'keywords': keywords,
-        'credits': credits,
+        # 'credits': credits,
         'cast': cast,
-        'num_films': len(Film.objects.all()),
+        'num_films': Film.objects.filter(**filters).count(),
         'nb_credits': nb_credits,
+        'films': list(films.values()),
         'runtime_breakdown': runtime_breakdowns,
         'most_recommended': most_recommended,
         'year_percentages': year_percentages,
+        'average_score': average_score,
         'decade_breakdown': decade_breakdown,
+        'liked_percentage': liked_percentage,
         'headline': headline
     }
-    return render(request, 'films/statistics.html', {'statistics': statistics})
+
+    return JsonResponse(data={
+        'statistics': statistics,
+        'wishlist': wishlist
+    })
+    # return render(request, 'films/statistics.html', {'statistics': statistics, 'filters': filters, 'wishlist': wishlist})
 
 
 def top(request):

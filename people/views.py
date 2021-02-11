@@ -1,12 +1,13 @@
 from django.shortcuts import render
 from . import people_helper
 import json
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from .models import Person
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import os
 import requests
 from operator import itemgetter
+from django.db.models import Avg, Max, Q, Count, FloatField, F
 
 
 movie_api_key = os.getenv("MOVIE_DB_KEY")
@@ -21,31 +22,33 @@ def get_person(request, id):
         movie_credits, key=itemgetter('vote_average'), reverse=True)
     tv_credits = sorted(
         tv_credits, key=itemgetter('vote_average'), reverse=True)
-    movie_paginator = Paginator(movie_credits, 10)
-    tv_paginator = Paginator(tv_credits, 10)
-    page = request.GET.get('page')
-    is_movie = request.GET.get('movie')
-    try:
-        if is_movie == 'True':
-            movie_credits = movie_paginator.page(page)
-            tv_credits = tv_paginator.page(1)
-        elif is_movie == 'False':
-            tv_credits = tv_paginator.page(page)
-            movie_credits = movie_paginator.page(1)
-    except PageNotAnInteger:
-        # If page is not an integer deliver the first page
-        movie_credits = movie_paginator.page(1)
-        tv_credits = tv_paginator.page(1)
-    except EmptyPage:
-        # If page is out of range deliver last page of results
-        if is_movie == 'True':
-            movie_credits = movie_paginator.page(movie_paginator.num_pages)
-        elif is_movie == 'False':
-            tv_credits = tv_paginator.page(tv_paginator.num_pages)
-    if not page:
-        movie_credits = movie_paginator.page(1)
-        tv_credits = tv_paginator.page(1)
-    return render(request, f'people/person.html', {'person': person, 'movie_credits': movie_credits, 'tv_credits': tv_credits, 'page': page})
+    # movie_paginator = Paginator(movie_credits, 10)
+    # tv_paginator = Paginator(tv_credits, 10)
+    # page = request.GET.get('page')
+    # is_movie = request.GET.get('movie')
+    # try:
+    #     if is_movie == 'True':
+    #         movie_credits = movie_paginator.page(page)
+    #         tv_credits = tv_paginator.page(1)
+    #     elif is_movie == 'False':
+    #         tv_credits = tv_paginator.page(page)
+    #         movie_credits = movie_paginator.page(1)
+    # except PageNotAnInteger:
+    #     # If page is not an integer deliver the first page
+    #     movie_credits = movie_paginator.page(1)
+    #     tv_credits = tv_paginator.page(1)
+    # except EmptyPage:
+    #     # If page is out of range deliver last page of results
+    #     if is_movie == 'True':
+    #         movie_credits = movie_paginator.page(movie_paginator.num_pages)
+    #     elif is_movie == 'False':
+    #         tv_credits = tv_paginator.page(tv_paginator.num_pages)
+    # if not page:
+    #     movie_credits = movie_paginator.page(1)
+    #     tv_credits = tv_paginator.page(1)
+
+    return JsonResponse(data={'person': person, 'movie_credits': movie_credits, 'tv_credits': tv_credits})
+    # return render(request, f'people/person.html', {'person': person, 'movie_credits': movie_credits, 'tv_credits': tv_credits, 'page': page})
 
 
 def like_person(request, id):

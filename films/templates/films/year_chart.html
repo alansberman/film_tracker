@@ -1,0 +1,93 @@
+{% load static %}
+
+<div id="container">
+  <canvas
+    id="years-chart"
+    data-url="{% url 'films:years-chart' %}?{{ request.GET.urlencode }}"
+  ></canvas>
+</div>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+<script src="../src/chartjs-plugin-trendline.js"></script>
+<link
+  rel="stylesheet"
+  href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css"
+/>
+<script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+<script>
+  $(function () {
+    var $yearsChart = $("#years-chart");
+    $.ajax({
+      url: $yearsChart.data("url"),
+      success: function (data) {
+        var ctx = $yearsChart[0].getContext("2d");
+
+        new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: data.labels,
+            datasets: [
+              {
+                label: "Count",
+                yAxisID: "A",
+                backgroundColor: "rgba(0, 0, 255, 0.2)",
+                borderWidth: 1,
+                borderColor: "blue",
+                data: data.data.one,
+              },
+              {
+                label: "My Average Score",
+                yAxisID: "B",
+                data: data.data.two,
+                // Changes this dataset to become a line
+                type: "line",
+                backgroundColor: "rgba(255,255,255, 0.1)",
+                borderWidth: 1,
+                borderColor: "red",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            legend: {
+              display: true,
+            },
+            title: {
+              display: true,
+              text: "My Films By Release Year",
+            },
+            scales: {
+              yAxes: [
+                {
+                  id: "A",
+                  position: "left",
+                  ticks: {
+                    beginAtZero: true,
+                    stepSize: 1,
+                    max: data.max + 1,
+                  },
+                  scaleLabel: {
+                    display: true,
+                    labelString: "Count",
+                  },
+                },
+                {
+                  id: "B",
+                  position: "right",
+                  ticks: {
+                    beginAtZero: true,
+                    stepSize: 1,
+                  },
+                  scaleLabel: {
+                    display: true,
+                    labelString: "My Score",
+                  },
+                },
+              ],
+            },
+          },
+        });
+      },
+    });
+  });
+</script>
